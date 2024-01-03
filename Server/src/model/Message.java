@@ -2,6 +2,14 @@ package model;
 
 public class Message {
 
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
+    }
+
     public boolean isAction() {
         return action;
     }
@@ -29,6 +37,6 @@ public class Message {
     
     private boolean action;
     private String message;
-    
+    private Object data;
     
 }

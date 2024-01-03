@@ -20,23 +20,57 @@ public class ServiceUser {
     public Message register(Register data){
         Message message = new Message();
         try {
-            User userCheck = verifyUser(data.getUserName(), data.getPassword());
-            if(userCheck != null){
+            PreparedStatement p = con.prepareStatement("SELECT * FROM users WHERE username = ?");
+            p.setString(1, data.getUserName());
+            ResultSet rs = p.executeQuery();
+            System.out.println("1");
+            if(rs.first()){
+                System.out.println("2");
                 message.setAction(false);
                 message.setMessage("User Already Exit");
             }else{
                 message.setAction(true);
             }
-
+            rs.close();
+            p.close();
             if(message.isAction()){
+                System.out.println("3");
+                con.setAutoCommit(false);
                 User user = new User(data.getUserName(), data.getPassword(), data.getNickname());
-                addUser(user);
+                p = con.prepareStatement("INSERT INTO users(username, password, nickname) VALUES(?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+                p.setString(1, user.getUsername());
+                p.setString(2, user.getPassword());
+                p.setString(3, user.getNickname());
+                p.executeUpdate();
+                rs = p.getGeneratedKeys();
+                rs.first();
+                int userID = rs.getInt(1);
+                rs.close();
+                p.close();
+                System.out.println("4");
+                con.commit();
+                con.setAutoCommit(true);
+                
                 message.setAction(true);
                 message.setMessage("Ok");
+                user.setID(userID);
+                user.setOnline(true);
+                System.out.println(user.toString());
+                message.setData(user);
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            System.out.println("5");
             message.setAction(false);
             message.setMessage("Server Error");
+            try {
+                if(con.getAutoCommit()==false){
+                    System.out.println("6");
+                    con.rollback();
+                    con.setAutoCommit(true);
+                }
+            } catch (SQLException e1) {
+                
+            }
         }
         return message;
     }
@@ -47,7 +81,26 @@ public class ServiceUser {
             preparedStatement.setString(1, userName);
             preparedStatement.setString(2, password);
             ResultSet rs = preparedStatement.executeQuery();
-            if (rs.first()) {
+            if (rs.next()) {
+                return new User(rs.getInt(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4),
+                        rs.getString(5),
+                        (rs.getInt(6) != 0));
+            }else return null;
+            
+        } catch (SQLException e) {
+        }
+        return null;
+    }
+    
+    public User checkUser(String userName) {
+        try {
+            PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM users WHERE username = ?");
+            preparedStatement.setString(1, userName);
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next()) {
                 return new User(rs.getInt(1),
                         rs.getString(2),
                         rs.getString(3),
@@ -102,7 +155,7 @@ public class ServiceUser {
 
     public void addUserWithUsernamePasswordNickname(User user) throws SQLException {
         PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO users(username, password, nickname)\n"
-                + "VALUES(?,?)");
+                + "VALUES(?,?,?)");
         preparedStatement.setString(1, user.getUsername());
         preparedStatement.setString(2, user.getPassword());
         preparedStatement.setString(3, user.getNickname());
