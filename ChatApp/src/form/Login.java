@@ -6,6 +6,7 @@ import event.PublicEvent;
 import io.socket.client.Ack;
 import model.Message;
 import model.Register;
+import model.User;
 import service.Service;
 
 public class Login extends javax.swing.JPanel {
@@ -41,10 +42,14 @@ public class Login extends javax.swing.JPanel {
             public void register(Register data, EventMessage message) {
                 Service.getInstance().getClient().emit("register", data.toJsonObject(), new Ack(){
                     @Override
-                    public void call(Object... os) {
+                    public void call(Object... os) { // os[isAction, message, data]
                         if(os.length >0){
                             Message ms = new Message((boolean)os[0], os[1].toString());
                             message.callMessage(ms);
+                            if(ms.isAction()){
+                                User user = new User(os[2]);
+                                System.out.println(user.getID());
+                            }
                         }
                     }
                     

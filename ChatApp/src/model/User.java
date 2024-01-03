@@ -1,5 +1,8 @@
 package model;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class User {
     private int ID;
     private String username;
@@ -55,11 +58,6 @@ public class User {
         return ID;
     }
 
-    public void setID(int ID) {
-        this.ID = ID;
-    }
-    
-
     public String getUsername() {
         return username;
     }
@@ -99,10 +97,19 @@ public class User {
     public void setOnline(boolean online) {
         isOnline = online;
     }
-
-    @Override
-    public String toString() {
-        return "User{" + "ID=" + ID + ", username=" + username + ", password=" + password + ", nickname=" + nickname + ", avatar=" + avatar + ", isOnline=" + isOnline + '}';
-    }
     
+    public User(Object json) {
+        JSONObject obj  = (JSONObject) json;
+        System.out.println(obj.toString());
+        try {
+            ID = obj.getInt("id"); 
+            username = obj.getString("username");
+            password = obj.getString("password");
+            nickname = obj.getString("nickname");
+//            avatar = obj.getString("avatar");
+            isOnline = obj.getBoolean("online");
+        } catch (JSONException e) {
+            System.err.println(e);
+        }
+    }
 }
