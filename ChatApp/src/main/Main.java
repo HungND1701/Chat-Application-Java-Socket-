@@ -4,6 +4,7 @@ import com.formdev.flatlaf.intellijthemes.FlatArcIJTheme;
 import event.EventImageView;
 import event.EventMain;
 import event.PublicEvent;
+import io.socket.emitter.Emitter;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import javax.swing.Icon;
@@ -47,6 +48,7 @@ public class Main extends javax.swing.JFrame {
             @Override
             public void initChat() {
                 home.setVisible(true);
+                Service.getInstance().getClient().emit("list_user", Service.getInstance().getUser().getID());
             }
         });
         

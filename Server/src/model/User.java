@@ -11,6 +11,14 @@ public class User {
     public User() {
     }
 
+    public User(int ID, String username, String nickname, String avatar, boolean isOnline) {
+        this.ID = ID;
+        this.username = username;
+        this.nickname = nickname;
+        this.avatar = avatar;
+        this.isOnline = isOnline;
+    }
+    
     public User(int ID, String username, String password, String nickname, String avatar, boolean isOnline) {
         this.ID = ID;
         this.username = username;
