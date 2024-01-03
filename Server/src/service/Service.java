@@ -6,13 +6,16 @@ import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
+import java.util.List;
 import javax.swing.JTextArea;
 import model.Message;
 import model.Register;
+import model.User;
 
 public class Service {
     private static Service instance;
     private SocketIOServer server;
+    private ServiceUser serviceUser;
     private JTextArea textArea;
     private final int PORT_NUMBER = 9999;
     
@@ -25,6 +28,7 @@ public class Service {
     
     private Service(JTextArea textArea){
         this.textArea = textArea;
+        serviceUser = new ServiceUser();
     }
     
     public void startServer(){
@@ -40,11 +44,22 @@ public class Service {
         server.addEventListener("register", Register.class, new DataListener<Register>() {
             @Override
             public void onData(SocketIOClient sioc, Register t, AckRequest ar) throws Exception {
-                Message message = new ServiceUser().register(t);
-                textArea.append("action : " + message.isAction()+ " || mess : "+ message.getMessage()+ " || data : "+ message.getData().toString()+"\n");
+                Message message = serviceUser.register(t);
                 ar.sendAckData(message.isAction(), message.getMessage(), message.getData());
                 if(message.isAction()){
                     textArea.append("User Register : " + t.getUserName()+ " || Pass : "+ t.getPassword()+ " || nickname : "+ t.getNickname()+"\n");
+                    server.getBroadcastOperations().sendEvent("list_user", (User) message.getData());
+                }
+            }
+        });
+        server.addEventListener("list_user", Integer.class, new DataListener<Integer>() {
+            @Override
+            public void onData(SocketIOClient sioc, Integer t, AckRequest ar) throws Exception {
+                try {
+                    List<User> list = serviceUser.getUserOnline(t);
+                    sioc.sendEvent("list_user", list.toArray());
+                } catch (Exception e) {
+                    System.err.println(e);
                 }
             }
         });

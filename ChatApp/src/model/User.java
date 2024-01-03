@@ -106,7 +106,7 @@ public class User {
             username = obj.getString("username");
             password = obj.getString("password");
             nickname = obj.getString("nickname");
-//            avatar = obj.getString("avatar");
+            avatar = obj.getString("avatar");
             isOnline = obj.getBoolean("online");
         } catch (JSONException e) {
             System.err.println(e);

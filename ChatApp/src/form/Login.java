@@ -48,7 +48,7 @@ public class Login extends javax.swing.JPanel {
                             message.callMessage(ms);
                             if(ms.isAction()){
                                 User user = new User(os[2]);
-                                System.out.println(user.getID());
+                                Service.getInstance().setUser(user);
                             }
                         }
                     }

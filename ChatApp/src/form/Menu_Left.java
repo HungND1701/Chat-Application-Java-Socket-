@@ -5,6 +5,11 @@
 package form;
 
 import component.Item_People;
+import event.EventMenuLeft;
+import event.PublicEvent;
+import java.util.ArrayList;
+import java.util.List;
+import model.User;
 import net.miginfocom.swing.MigLayout;
 import swing.ScrollBar;
 
@@ -14,9 +19,7 @@ import swing.ScrollBar;
  */
 public class Menu_Left extends javax.swing.JPanel {
 
-    /**
-     * Creates new form Menu_Left
-     */
+    private List<User> userAccount;
     public Menu_Left() {
         initComponents();
         init();
@@ -25,13 +28,24 @@ public class Menu_Left extends javax.swing.JPanel {
     public void init(){
         sp.setVerticalScrollBar(new ScrollBar());
         menuList.setLayout(new MigLayout("fillx","0[fill]0","0[]1" ));
+        userAccount = new ArrayList<>();
+        PublicEvent.getInstance().addEventMenuLeft(new EventMenuLeft() {
+            @Override
+            public void newUser(List<User> users) {
+                for(User user : users){
+                    userAccount.add(user);
+                    menuList.add(new Item_People(user.getUsername()), "wrap");
+                    refreshMenuList();
+                }
+            }
+        });
         showMessage();
     }
 
     private void showMessage(){
         menuList.removeAll();
-        for(int i=0; i < 10; i++){
-            menuList.add(new Item_People("People " + (i+1)), "wrap");
+        for(User user : userAccount){
+            menuList.add(new Item_People(user.getUsername()), "wrap");
         }
         refreshMenuList();
     }

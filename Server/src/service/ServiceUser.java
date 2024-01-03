@@ -55,6 +55,7 @@ public class ServiceUser {
                 message.setMessage("Ok");
                 user.setID(userID);
                 user.setOnline(true);
+                user.setAvatar("");
                 System.out.println(user.toString());
                 message.setData(user);
             }
@@ -73,6 +74,19 @@ public class ServiceUser {
             }
         }
         return message;
+    }
+    
+    public List<User> getUserOnline(int exitUser) throws SQLException {
+        List<User> list = new ArrayList<>();
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE isOnline = '1' AND id <> ?");
+        p.setInt(1, exitUser);
+        ResultSet rs = p.executeQuery();
+        while(rs.next()){
+            list.add(new User(rs.getInt(1),rs.getString(2),"",rs.getString(3),rs.getString(4), true));
+        }
+        rs.close();
+        p.close();
+        return list;
     }
     
     public User verifyUser(String userName, String password) {
