@@ -5,6 +5,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import model.Login;
 import model.Message;
 import model.Register;
 import model.User;
@@ -74,6 +75,25 @@ public class ServiceUser {
             }
         }
         return message;
+    }
+    
+    public User login(Login login) throws SQLException{
+        User data = null;
+        PreparedStatement p = con.prepareStatement("SELECT ID, username, password, nickname, avatar, isOnline FROM users WHERE username = ? and password = ?");
+        p.setString(1, login.getUsername());
+        p.setString(2, login.getPassword());
+        ResultSet r = p.executeQuery();
+        if (r.next()){
+            int ID = r.getInt(1);
+            String username = r.getString(2);
+            String password = r.getString(3);
+            String nickname = r.getString(4);
+            String avatar = r.getString(5);
+            data = new User(ID, username, password, nickname, avatar, true);
+        }
+        r.close();
+        p.close();
+        return data;
     }
     
     public List<User> getUserOnline(int exitUser) throws SQLException {

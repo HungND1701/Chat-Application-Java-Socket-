@@ -44,7 +44,10 @@ public class Service {
                 public void call(Object... os) {
                     List<User> users = new ArrayList<>();
                     for(Object o: os){
-                        users.add(new User(o));
+                        User u = new User(o);
+                        if (u.getID() != user.getID()){
+                            users.add(u);
+                        }
                     }
                     PublicEvent.getInstance().getEventMenuLeft().newUser(users);
                 }

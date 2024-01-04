@@ -8,6 +8,7 @@ import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import java.util.List;
 import javax.swing.JTextArea;
+import model.Login;
 import model.Message;
 import model.Register;
 import model.User;
@@ -52,6 +53,18 @@ public class Service {
                 }
             }
         });
+        server.addEventListener("login", Login.class, new DataListener<Login>() {
+            @Override
+            public void onData(SocketIOClient sioc, Login t, AckRequest ar) throws Exception {
+                User login = serviceUser.login(t);
+                if (login != null){
+                    ar.sendAckData(true, login);
+                } else {
+                    ar.sendAckData(false);
+                }
+            }
+        });
+        
         server.addEventListener("list_user", Integer.class, new DataListener<Integer>() {
             @Override
             public void onData(SocketIOClient sioc, Integer t, AckRequest ar) throws Exception {

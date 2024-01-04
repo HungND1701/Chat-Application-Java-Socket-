@@ -48,6 +48,8 @@ public class Main extends javax.swing.JFrame {
             @Override
             public void initChat() {
                 home.setVisible(true);
+                login.setVisible(false);
+                
                 Service.getInstance().getClient().emit("list_user", Service.getInstance().getUser().getID());
             }
         });
