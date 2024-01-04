@@ -39,4 +39,11 @@ public class Register {
 
     public Register() {
     }
+
+    @Override
+    public String toString() {
+        return "Register{" + "userName=" + userName + ", password=" + password + ", nickname=" + nickname + '}';
+    }
+    
+    
 }
