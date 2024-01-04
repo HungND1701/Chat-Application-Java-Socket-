@@ -24,7 +24,7 @@ public class ServiceUser {
             p.setString(1, data.getUserName());
             ResultSet rs = p.executeQuery();
             System.out.println("1");
-            if(rs.first()){
+            if(rs.next()){
                 System.out.println("2");
                 message.setAction(false);
                 message.setMessage("User Already Exit");
@@ -43,7 +43,7 @@ public class ServiceUser {
                 p.setString(3, user.getNickname());
                 p.executeUpdate();
                 rs = p.getGeneratedKeys();
-                rs.first();
+                rs.next();
                 int userID = rs.getInt(1);
                 rs.close();
                 p.close();
@@ -60,7 +60,7 @@ public class ServiceUser {
                 message.setData(user);
             }
         } catch (SQLException e) {
-            System.out.println("5");
+            System.out.println(e);
             message.setAction(false);
             message.setMessage("Server Error");
             try {
