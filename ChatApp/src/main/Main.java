@@ -10,6 +10,7 @@ import java.awt.Toolkit;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import model.User;
 import service.Service;
 import swing.ComponentResizer;
 
@@ -52,6 +53,18 @@ public class Main extends javax.swing.JFrame {
                 
                 Service.getInstance().getClient().emit("list_user", Service.getInstance().getUser().getID());
             }
+
+            @Override
+            public void selectUser(User user) {
+                home.setUser(user);
+            }
+
+            @Override
+            public void updateUser(User user) {
+                home.updateUser(user);
+            }
+            
+            
         });
         
         PublicEvent.getInstance().addEventImageView(new EventImageView() {

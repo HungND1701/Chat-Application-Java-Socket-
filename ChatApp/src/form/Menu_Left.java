@@ -45,6 +45,7 @@ public class Menu_Left extends javax.swing.JPanel {
                 for (User u : userAccount){
                     if (u.getID() == ID){
                         u.setOnline(true);
+                        PublicEvent.getInstance().getEventMain().updateUser(u);
                         break;
                     }
                 }
@@ -52,7 +53,7 @@ public class Menu_Left extends javax.swing.JPanel {
                     for (Component com : menuList.getComponents()){
                         Item_People item = (Item_People) com;
                         if (item.getUser().getID() == ID){
-                            item.updateStatus();
+                            item.updateStatus();    
                             break;
                         }
                     }
@@ -64,6 +65,7 @@ public class Menu_Left extends javax.swing.JPanel {
               for (User u : userAccount){
                     if (u.getID() == ID){
                         u.setOnline(false);
+                        PublicEvent.getInstance().getEventMain().updateUser(u);
                         break;
                     }
                 }

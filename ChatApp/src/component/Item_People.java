@@ -4,6 +4,7 @@
  */
 package component;
 
+import event.PublicEvent;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -12,7 +13,8 @@ import model.User;
 public class Item_People extends javax.swing.JPanel {
 
     private final User user;
-
+    private boolean mouseOver;
+    
     public User getUser() {
         return user;
     }
@@ -35,13 +37,23 @@ public class Item_People extends javax.swing.JPanel {
             public void mouseEntered(MouseEvent e) {
                 super.mouseEntered(e); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
                 setBackground(new Color(230,230,230));
+                mouseOver = true;
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 super.mouseExited(e); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
                 setBackground(new Color(249,249,249));
+                mouseOver = false;
             }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (mouseOver){
+                    PublicEvent.getInstance().getEventMain().selectUser(user);
+                }
+            }
+            
             
         });
     }
@@ -64,7 +76,7 @@ public class Item_People extends javax.swing.JPanel {
 
         lbStatus.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
         lbStatus.setForeground(new java.awt.Color(137, 134, 134));
-        lbStatus.setText("Name");
+        lbStatus.setText("New User");
 
         imageAvatar2.setBorderSize(1);
         imageAvatar2.setImage(new javax.swing.ImageIcon(getClass().getResource("/icon/profile.png"))); // NOI18N
