@@ -9,6 +9,7 @@ import model.Login;
 import model.Message;
 import model.Register;
 import model.User;
+import model.Client;
 
 public class ServiceUser {
     
@@ -96,13 +97,22 @@ public class ServiceUser {
         return data;
     }
     
+    private boolean checkUserStatus(int ID){
+        List<Client> clients = Service.getInstance(null).getListClient();
+        for (Client c : clients){
+            if (c.getUser().getID() == ID)
+                return true;
+        }
+        return false;
+    }
+    
     public List<User> getUserOnline(int exitUser) throws SQLException {
         List<User> list = new ArrayList<>();
         PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE isOnline = '1' AND id <> ?");
         p.setInt(1, exitUser);
         ResultSet rs = p.executeQuery();
         while(rs.next()){
-            list.add(new User(rs.getInt(1),rs.getString(2),"",rs.getString(3),rs.getString(4), true));
+            list.add(new User(rs.getInt(1),rs.getString(2),"",rs.getString(3),rs.getString(4), checkUserStatus(rs.getInt(1))));
         }
         rs.close();
         p.close();

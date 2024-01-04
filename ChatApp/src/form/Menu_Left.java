@@ -12,6 +12,7 @@ import java.util.List;
 import model.User;
 import net.miginfocom.swing.MigLayout;
 import swing.ScrollBar;
+import java.awt.Component;
 
 /**
  *
@@ -34,10 +35,49 @@ public class Menu_Left extends javax.swing.JPanel {
             public void newUser(List<User> users) {
                 for(User user : users){
                     userAccount.add(user);
-                    menuList.add(new Item_People(user.getUsername()), "wrap");
+                    menuList.add(new Item_People(user), "wrap");
                     refreshMenuList();
                 }
             }
+
+            @Override
+            public void userConnect(int ID) {
+                for (User u : userAccount){
+                    if (u.getID() == ID){
+                        u.setOnline(true);
+                        break;
+                    }
+                }
+                if (menuMessage.isSelected()){
+                    for (Component com : menuList.getComponents()){
+                        Item_People item = (Item_People) com;
+                        if (item.getUser().getID() == ID){
+                            item.updateStatus();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void userDisconnect(int ID) {
+              for (User u : userAccount){
+                    if (u.getID() == ID){
+                        u.setOnline(false);
+                        break;
+                    }
+                }
+                if (menuMessage.isSelected()){
+                    for (Component com : menuList.getComponents()){
+                        Item_People item = (Item_People) com;
+                        if (item.getUser().getID() == ID){
+                            item.updateStatus();
+                            break;
+                        }
+                    }
+                }
+            }
+            
         });
         showMessage();
     }
@@ -45,7 +85,7 @@ public class Menu_Left extends javax.swing.JPanel {
     private void showMessage(){
         menuList.removeAll();
         for(User user : userAccount){
-            menuList.add(new Item_People(user.getUsername()), "wrap");
+            menuList.add(new Item_People(null), "wrap");
         }
         refreshMenuList();
     }
@@ -53,7 +93,7 @@ public class Menu_Left extends javax.swing.JPanel {
     private void showGroup(){
         menuList.removeAll();
         for(int i=0; i < 5; i++){
-            menuList.add(new Item_People("Group " + (i+1)), "wrap");
+            menuList.add(new Item_People(null), "wrap");
         }
         refreshMenuList();
     }
@@ -61,7 +101,7 @@ public class Menu_Left extends javax.swing.JPanel {
     private void showFriend(){
         menuList.removeAll();
         for(int i=0; i < 7; i++){
-            menuList.add(new Item_People("Friend " + (i+1)), "wrap");
+            menuList.add(new Item_People(null), "wrap");
         }
         refreshMenuList();
     }
