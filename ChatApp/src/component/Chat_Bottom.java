@@ -13,8 +13,10 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
+import model.SendMessage;
 import model.User;
 import net.miginfocom.swing.MigLayout;
+import service.Service;
 import swing.JIMSendTextPane;
 import swing.ScrollBar;
 
@@ -70,7 +72,9 @@ public class Chat_Bottom extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 String text = txt.getText().trim();
                 if(!text.equals("")) {
-                    PublicEvent.getInstance().getEventChat().sendMessage(text);
+                    SendMessage message = new SendMessage(Service.getInstance().getUser().getID(), user.getID(), text);
+                    send(message);
+                    PublicEvent.getInstance().getEventChat().sendMessage(message);
                     txt.setText("");
                     txt.grabFocus();
                     refresh();
@@ -82,6 +86,10 @@ public class Chat_Bottom extends javax.swing.JPanel {
         });
         panel.add(cmd);
         add(panel);
+    }
+    
+    private void send(SendMessage data){
+        Service.getInstance().getClient().emit("send_to_user", data.toJSONObject());
     }
     
     private void refresh(){

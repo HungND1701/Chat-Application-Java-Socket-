@@ -7,6 +7,7 @@ import io.socket.emitter.Emitter;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import model.ReceiveMessage;
 import model.User;
 
 public class Service {
@@ -62,6 +63,14 @@ public class Service {
                    } else{
                        PublicEvent.getInstance().getEventMenuLeft().userDisconnect(ID);
                    }
+                }
+            });
+            
+            client.on("receive_ms", new Emitter.Listener() {
+                @Override
+                public void call(Object... os) {
+                    ReceiveMessage message = new ReceiveMessage(os[0]);
+                    PublicEvent.getInstance().getEventChat().receiveMessage(message);
                 }
             });
             client.open();

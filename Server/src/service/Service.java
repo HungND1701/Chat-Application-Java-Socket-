@@ -13,7 +13,9 @@ import javax.swing.JTextArea;
 import model.Client;
 import model.Login;
 import model.Message;
+import model.ReceiveMessage;
 import model.Register;
+import model.SendMessage;
 import model.User;
 
 public class Service {
@@ -84,6 +86,12 @@ public class Service {
                 }
             }
         });
+        server.addEventListener("send_to_user", SendMessage.class, new DataListener<SendMessage>() {
+            @Override
+            public void onData(SocketIOClient sioc, SendMessage t, AckRequest ar) throws Exception {
+                sendToClient(t);
+            }
+        });
         server.addDisconnectListener(new DisconnectListener() {
             @Override
             public void onDisconnect(SocketIOClient sioc) {
@@ -108,7 +116,13 @@ public class Service {
     private void addClient(SocketIOClient client, User user){
         listClient.add(new Client(client, user));
     }
-    
+    private void sendToClient(SendMessage data){
+        for(Client c : listClient){
+            if(c.getUser().getID() == data.getToUserID()){
+                c.getClient().sendEvent("receive_ms", new ReceiveMessage(data.getFromUserID(), data.getText()));
+            }
+        }
+    }
     public int removeClient(SocketIOClient client){
         for (Client d : listClient){
             if (d.getClient() == client){

@@ -5,6 +5,8 @@ import component.Chat_Bottom;
 import component.Chat_Title;
 import event.EventChat;
 import event.PublicEvent;
+import model.ReceiveMessage;
+import model.SendMessage;
 import model.User;
 import net.miginfocom.swing.MigLayout;
 
@@ -30,9 +32,18 @@ public class Chat extends javax.swing.JPanel {
         chatBottom = new Chat_Bottom();
         PublicEvent.getInstance().addEventChat(new EventChat() {
             @Override
-            public void sendMessage(String text) {
-                chatBody.addItemRight(text);
+            public void sendMessage(SendMessage data) {
+                chatBody.addItemRight(data);
             }
+
+            @Override
+            public void receiveMessage(ReceiveMessage data) {
+                if (chatTitle.getUser().getID() == data.getFromUserID()){
+                    chatBody.addItemLeft(data);
+                }
+            }
+            
+            
         });
         add(chatTitle, "wrap");
         add(chatBody, "wrap");
@@ -42,6 +53,7 @@ public class Chat extends javax.swing.JPanel {
     public void setUser(User user){
         chatTitle.setUserName(user);
         chatBottom.setUser(user);
+        chatBody.clearChat();
     }
     
     public void updateUser(User user){

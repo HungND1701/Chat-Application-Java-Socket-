@@ -7,6 +7,8 @@ import java.awt.event.AdjustmentListener;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JScrollBar;
+import model.ReceiveMessage;
+import model.SendMessage;
 import net.miginfocom.swing.MigLayout;
 import swing.ScrollBar;
 
@@ -15,32 +17,6 @@ public class Chat_Body extends javax.swing.JPanel {
     public Chat_Body() {
         initComponents();
         init();
-        String img[] = {"LFIh4_NH~psRyCRk-;ae9]WAIVtR", "LNOViRwH?]xY_24oX7xtJUxuWCoz"};
-        
-        addItemRight("Simpletext started as a passion project because I couldn’t find what I was looking for. Most apps were trying to do too much and ended up bloated with features I don’t need. So I built Simpletext based on a simple premise — what if there’s an app that refuses to do more, choosing instead to do just one thing, and do it well? For Simpletext, that one thing is writing.");
-        addItemLeft("hello\nerererew\newewe", "abc");
-        addItemLeft("hello\nerererew\newewe", "abc");
-        addItemLeft("Send a text message to a group of contacts. Include photos, personalize your texts, and track who clicked your links.", "abc");
-        addItemRight("hello\nHi");
-        addItemLeft("Simpletext started as a passion project because I couldn’t find what I was looking for. Most apps were trying to do too much and ended up bloated with features I don’t need. So I built Simpletext based on a simple premise — what if there’s an app that refuses to do more, choosing instead to do just one thing, and do it well? For Simpletext, that one thing is writing.", "abc");
-        addItemLeft("hello\nerererew\newewe", "def");
-        addItemRight("hello\nerererew\newewe");
-        addDate("29/12/2023");
-        addItemLeft("hello\nerererew\newewe", "def");
-        
-        addItemLeft("hello\nerererew\newewe", "def", img);
-        addItemRight("hello\nerererew\newewe");
-        addItemRight("Send a text message to a group of contacts. Include photos, personalize your texts, and track who clicked your links.");
-        addItemRight("hello\nHi");
-        addItemLeft("Simpletext started as a passion project because I couldn’t find what I was looking for. Most apps were trying to do too much and ended up bloated with features I don’t need. So I built Simpletext based on a simple premise — what if there’s an app that refuses to do more, choosing instead to do just one thing, and do it well? For Simpletext, that one thing is writing.", "abc", new ImageIcon(getClass().getResource("/image/pam2.jpg")), new ImageIcon(getClass().getResource("/image/man1.jpg")));
-        addItemLeft("hello\nerererew\newewe", "def", new ImageIcon(getClass().getResource("/image/pam.jpg")), new ImageIcon(getClass().getResource("/image/man1.jpg")));
-        addDate("Today");
-        addItemRight("hello\nerererew\newewe", new ImageIcon(getClass().getResource("/image/man2.jpg")), new ImageIcon(getClass().getResource("/image/pam2.jpg")));
-        addItemLeft("", "def", new ImageIcon(getClass().getResource("/image/man2.jpg")), new ImageIcon(getClass().getResource("/image/man1.jpg")));
-        addItemRight("hello\nerererew\newewe");
-//        addItemFileLeft("hello\nerererew\newewe", "dev", "my doc.pdf", "10 MB");
-//        addItemFileRight("hello\nerererew\newewe", "my doc.pdf", "10 MB");
-//        addItemFileRight("", "my doc.pdf", "10 MB");
     }
 
     private void init(){
@@ -49,26 +25,23 @@ public class Chat_Body extends javax.swing.JPanel {
         sp.getVerticalScrollBar().setBackground(Color.WHITE);
     }
     
-    public void addItemLeft(String text, String user, Icon... image){
-        Chat_Left_With_Profile item = new Chat_Left_With_Profile();
-        item.setText(text);
-        item.setImage(image);
+    public void addItemLeft(ReceiveMessage data){
+        Chat_Left item = new Chat_Left();
+        item.setText(data.getText());
         item.setTime();
-        item.setUserProfile(user);
         body.add(item, "wrap, w 100::80%");
-        body.repaint();
-        body.revalidate();
+        repaint();
+        revalidate();
     }  
     
-    public void addItemRight(String text, Icon... image){
+    public void addItemRight(SendMessage data){
         Chat_Right item = new Chat_Right();
-        item.setText(text); 
-        item.setImage(image);
+        item.setText(data.getText()); 
         item.setTime();
         item.setSeenStatus();
         body.add(item, "wrap, al right, w 100::80%");
-        body.repaint();
-        body.revalidate();
+        repaint();
+        revalidate();
         scrollToBottom();
     } 
     
@@ -125,6 +98,11 @@ public class Chat_Body extends javax.swing.JPanel {
         body.revalidate();
     }
     
+    public void clearChat(){
+        body.removeAll();
+        repaint();
+        revalidate();
+    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
