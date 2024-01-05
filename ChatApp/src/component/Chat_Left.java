@@ -1,6 +1,8 @@
 package component;
 
 import java.awt.Color;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import javax.swing.Icon;
 
 public class Chat_Left extends javax.swing.JLayeredPane {
@@ -28,7 +30,9 @@ public class Chat_Left extends javax.swing.JLayeredPane {
     }
     
     public void setTime(){ // add time later
-        txt.setTime("10:30 PM");
+        LocalTime now = LocalTime.now();
+        System.out.println(now.format(DateTimeFormatter.ofPattern("HH:mm")));
+        txt.setTime(now.format(DateTimeFormatter.ofPattern("HH:mm")));
     }
     
     public void setFile(String fileName, String fileSize){
