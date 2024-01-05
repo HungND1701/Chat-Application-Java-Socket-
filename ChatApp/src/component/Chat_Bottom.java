@@ -47,6 +47,9 @@ public class Chat_Bottom extends javax.swing.JPanel {
             @Override
             public void keyTyped(KeyEvent e) {
                 refresh();
+                if (e.getKeyChar() == 10 && e.isControlDown()){
+                    eventSend(txt);
+                }
             }
             
         });
@@ -72,17 +75,7 @@ public class Chat_Bottom extends javax.swing.JPanel {
         cmd.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                String text = txt.getText().trim();
-                if(!text.equals("")) {
-                    SendMessage message = new SendMessage(Service.getInstance().getUser().getID(), user.getID(), text);
-                    send(message);
-                    PublicEvent.getInstance().getEventChat().sendMessage(message);
-                    txt.setText("");
-                    txt.grabFocus();
-                    refresh();
-                }else{
-                    txt.grabFocus();
-                }
+                eventSend(txt);
             }
             
         });
@@ -118,6 +111,19 @@ public class Chat_Bottom extends javax.swing.JPanel {
         add(panelMore, "dock south, h 0!");
     }
     
+    private void eventSend(JIMSendTextPane txt) {
+        String text = txt.getText().trim();
+        if (!text.equals("")) {
+            SendMessage message = new SendMessage(Service.getInstance().getUser().getID(), user.getID(), text);
+            send(message);
+            PublicEvent.getInstance().getEventChat().sendMessage(message);
+            txt.setText("");
+            txt.grabFocus();
+            refresh();
+        } else {
+            txt.grabFocus();
+        }
+    }
     private void send(SendMessage data){
         Service.getInstance().getClient().emit("send_to_user", data.toJSONObject());
     }
