@@ -10,6 +10,15 @@ public class SendMessage {
     private int fromUserID;
     private int toUserID;
     private String text;
+    private FileSender file;
+
+    public FileSender getFile() {
+        return file;
+    }
+
+    public void setFile(FileSender file) {
+        this.file = file;
+    }
 
     public MessageType getMessageType() {
         return messageType;
@@ -60,7 +69,12 @@ public class SendMessage {
             json.put("messageType", messageType.getValue());
             json.put("fromUserID", fromUserID);
             json.put("toUserID", toUserID);
-            json.put("text", text);
+            if (messageType == MessageType.FILE || messageType == MessageType.IMAGE){
+                json.put("text", file.getFileExtensions());
+             
+            } else{
+                json.put("text", text);
+            }
             return json;
         } catch (JSONException e) {
             return null;

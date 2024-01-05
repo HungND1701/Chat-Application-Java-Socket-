@@ -4,10 +4,14 @@ import event.PublicEvent;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
+import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import model.FileSender;
 import model.ReceiveMessage;
+import model.SendMessage;
 import model.User;
 
 public class Service {
@@ -16,6 +20,8 @@ public class Service {
     private final int PORT_NUMBER = 9999;
     private final String IP = "localhost";
     private User user;
+    private List<FileSender> fileSender;
+    
 
     public User getUser() {
         return user;
@@ -34,7 +40,7 @@ public class Service {
     }
     
     private Service( ){
-
+        fileSender = new ArrayList<>();
     }
     
     public void startServer(){
@@ -86,5 +92,24 @@ public class Service {
     
     public Socket getClient() {
         return client;
+    }
+    
+    public FileSender addFile (File file, SendMessage message) throws IOException{
+        FileSender data = new FileSender(file, client, message);
+        message.setFile(data);
+        fileSender.add(data);
+        // For send file one by one
+        if(fileSender.size() == 1){
+            data.initSend();
+        }
+        return data;
+    }
+    
+    public void fileSendFinish(FileSender data) throws IOException{
+        fileSender.remove(data);
+        if(!fileSender.isEmpty()){
+            // Start send new file when old file finished
+            fileSender.get(0).initSend();
+        }
     }
 }

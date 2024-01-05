@@ -7,7 +7,9 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+import model.FileSender;
 import net.miginfocom.swing.MigLayout;
 import swing.PictureBox;
 
@@ -15,21 +17,20 @@ public class Chat_Image extends javax.swing.JLayeredPane {
 
     public Chat_Image(boolean right) {
         initComponents();
-        setLayout(new MigLayout("", "0[" +(right ? "right":"left")+ "]0", "3[]3"));
+        setLayout(new MigLayout("", "0[" + (right ? "right" : "left") + "]0", "3[]3"));
     }
 
-    public void addImage(Icon... images){
-        for(Icon image : images){
-            PictureBox pic = new PictureBox();
-            pic.setPreferredSize(getAutoSize(image, 200, 200));
-            pic.setImage(image);
-            addEvent(pic, image);
-            add(pic, "wrap");
-        }
+    public void addImage(FileSender fileSender) {
+        Icon image = new ImageIcon(fileSender.getFile().getAbsolutePath());
+        Image_Item pic = new Image_Item();
+        pic.setPreferredSize(getAutoSize(image, 200, 200));
+        pic.setImage(image, fileSender);
+        addEvent(pic, image);
+        add(pic, "wrap");
     }
-    
-    public void addImage(String... images){
-        for(String image : images){
+
+    public void addImage(String... images) {
+        for (String image : images) {
             Image_Item pic = new Image_Item();
             pic.setPreferredSize(new Dimension(200, 200));
             pic.setImage(image);
@@ -37,27 +38,27 @@ public class Chat_Image extends javax.swing.JLayeredPane {
             add(pic, "wrap");
         }
     }
-    
-    private void addEvent(Component com, Icon image){
+
+    private void addEvent(Component com, Icon image) {
         com.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        com.addMouseListener(new MouseAdapter(){
+        com.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(SwingUtilities.isLeftMouseButton(e)){  // click chuột trái 
+                if (SwingUtilities.isLeftMouseButton(e)) {  // click chuột trái 
                     PublicEvent.getInstance().getEventImageView().viewImage(image);
                 }
             }
-            
+
         });
     }
-    
+
     private Dimension getAutoSize(Icon image, int w, int h) {
         int iw = image.getIconWidth();
         int ih = image.getIconHeight();
-        if(w > iw){
+        if (w > iw) {
             w = iw;
         }
-        if(h > ih){
+        if (h > ih) {
             h = ih;
         }
         double xScale = (double) w / iw;
@@ -67,6 +68,7 @@ public class Chat_Image extends javax.swing.JLayeredPane {
         int height = (int) (scale * ih);
         return new Dimension(width, height);
     }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

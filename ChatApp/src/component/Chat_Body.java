@@ -57,6 +57,13 @@ public class Chat_Body extends javax.swing.JPanel {
             body.add(item, "wrap, al right, w 100::80%");
             item.setSeenStatus();
             item.setTime();
+        } else if (data.getMessageType() == MessageType.IMAGE){
+            Chat_Right item = new Chat_Right();
+            item.setText("");
+            item.setImage(data.getFile());
+            body.add(item, "wrap, al right, w 100::80%");
+            item.setSeenStatus();
+            item.setTime();
         }
         repaint();
         revalidate();

@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import javax.swing.Icon;
+import model.FileSender;
 
 public class Chat_Right extends javax.swing.JLayeredPane {
 
@@ -21,8 +22,8 @@ public class Chat_Right extends javax.swing.JLayeredPane {
         }
     }
     
-    public void setImage(Icon... image){
-        txt.setImage(true, image);
+    public void setImage(FileSender fileSender){
+        txt.setImage(true, fileSender);
     }
     
     public void setImage(String... image){
