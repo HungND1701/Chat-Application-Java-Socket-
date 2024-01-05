@@ -17,6 +17,7 @@ public class Chat_Body extends javax.swing.JPanel {
     public Chat_Body() {
         initComponents();
         init();
+        
     }
 
     private void init(){
