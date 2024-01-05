@@ -1,5 +1,6 @@
 package component;
 
+import app.MessageType;
 import event.PublicEvent;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -30,6 +31,7 @@ public class Chat_Bottom extends javax.swing.JPanel {
 
     public void setUser(User user) {
         this.user = user;
+        panelMore.setUser(user);
     }
     
     public Chat_Bottom() {
@@ -114,7 +116,7 @@ public class Chat_Bottom extends javax.swing.JPanel {
     private void eventSend(JIMSendTextPane txt) {
         String text = txt.getText().trim();
         if (!text.equals("")) {
-            SendMessage message = new SendMessage(Service.getInstance().getUser().getID(), user.getID(), text);
+            SendMessage message = new SendMessage(MessageType.TEXT,Service.getInstance().getUser().getID(), user.getID(), text);
             send(message);
             PublicEvent.getInstance().getEventChat().sendMessage(message);
             txt.setText("");

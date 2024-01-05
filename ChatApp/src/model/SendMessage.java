@@ -1,23 +1,24 @@
 package model;
 
+import app.MessageType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SendMessage {
+    
+    private MessageType messageType;
     private int fromUserID;
     private int toUserID;
     private String text;
 
-    public SendMessage() {
+    public MessageType getMessageType() {
+        return messageType;
     }
 
-    public SendMessage(int fromUserID, int toUserID, String text) {
-        this.fromUserID = fromUserID;
-        this.toUserID = toUserID;
-        this.text = text;
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
     }
 
-    
     public int getFromUserID() {
         return fromUserID;
     }
@@ -41,10 +42,22 @@ public class SendMessage {
     public void setText(String text) {
         this.text = text;
     }
+
+    public SendMessage() {
+    }
+
+    public SendMessage(MessageType messageType, int fromUserID, int toUserID, String text) {
+        this.messageType = messageType;
+        this.fromUserID = fromUserID;
+        this.toUserID = toUserID;
+        this.text = text;
+    }
+    
     
     public JSONObject toJSONObject(){
         try {
             JSONObject json = new JSONObject();
+            json.put("messageType", messageType.getValue());
             json.put("fromUserID", fromUserID);
             json.put("toUserID", toUserID);
             json.put("text", text);

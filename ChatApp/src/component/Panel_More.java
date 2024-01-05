@@ -1,7 +1,9 @@
 package component;
 
+import app.MessageType;
 import emoji.Emogi;
 import emoji.Emoji;
+import event.PublicEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -19,17 +21,31 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import main.Main;
+import model.SendMessage;
+import model.User;
 import net.miginfocom.swing.MigLayout;
+import service.Service;
 import swing.ScrollBar;
 import swing.WrapLayout;
 
 public class Panel_More extends javax.swing.JPanel {
+    
+    private User user;
+    
+    public User getUser(){
+        return user;
+    }
+    
+    public void setUser(User user){
+        this.user = user;
+    }
 
     public Panel_More() {
         initComponents();
         init();
     }
-    private void init(){
+
+    private void init() {
         setLayout(new MigLayout("fillx"));
         panelHeader = new JPanel();
         panelHeader.setLayout(new BoxLayout(panelHeader, BoxLayout.LINE_AXIS));
@@ -45,8 +61,8 @@ public class Panel_More extends javax.swing.JPanel {
         ch.setVerticalScrollBar(new ScrollBar());
         add(ch, "w 100%, h 100%");
     }
-    
-    private JButton getButtonFile(){
+
+    private JButton getButtonFile() {
         OptionButton cmd = new OptionButton();
         cmd.setIcon(new ImageIcon(getClass().getResource("/icon/link.png")));
         cmd.addActionListener(new ActionListener() {
@@ -59,7 +75,8 @@ public class Panel_More extends javax.swing.JPanel {
         });
         return cmd;
     }
-    private JButton getEmojiStyle1(){
+
+    private JButton getEmojiStyle1() {
         OptionButton cmd = new OptionButton();
         cmd.setIcon(Emogi.getInstance().getImoji(1).toSize(25, 25).getIcon());
         cmd.addActionListener(new ActionListener() {
@@ -68,22 +85,18 @@ public class Panel_More extends javax.swing.JPanel {
                 clearSelected();
                 cmd.setSelected(true);
                 panelDetail.removeAll();
-                for (Emoji d: Emogi.getInstance().getStyle1()){
-                    JButton c = new JButton(d.getIcon());
-                    c.setName(d.getId() + "");
-                    c.setBorder(new EmptyBorder(3, 3, 3, 3));
-                    c.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    c.setContentAreaFilled(false);
-                    panelDetail.add(c);
+                for (Emoji d : Emogi.getInstance().getStyle1()) {
+                    panelDetail.add(getButton(d));
                 }
                 panelDetail.repaint();
                 panelDetail.revalidate();
             }
         });
-        
+
         return cmd;
     }
-    private JButton getEmojiStyle2(){
+
+    private JButton getEmojiStyle2() {
         OptionButton cmd = new OptionButton();
         cmd.setIcon(Emogi.getInstance().getImoji(21).toSize(25, 25).getIcon());
         cmd.addActionListener(new ActionListener() {
@@ -92,21 +105,39 @@ public class Panel_More extends javax.swing.JPanel {
                 clearSelected();
                 cmd.setSelected(true);
                 panelDetail.removeAll();
-                for (Emoji d: Emogi.getInstance().getStyle2()){
-                    JButton c = new JButton(d.getIcon());
-                    c.setName(d.getId() + "");
-                    c.setBorder(new EmptyBorder(3, 3, 3, 3));
-                    c.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    c.setContentAreaFilled(false);
-                    panelDetail.add(c);
+                for (Emoji d : Emogi.getInstance().getStyle2()) {                    
+                    panelDetail.add(getButton(d));
                 }
                 panelDetail.repaint();
                 panelDetail.revalidate();
             }
         });
-        
+
         return cmd;
     }
+
+    private JButton getButton(Emoji data) {
+        JButton cmd = new JButton(data.getIcon());
+        cmd.setName(data.getId() + "");
+        cmd.setBorder(new EmptyBorder(3, 3, 3, 3));
+        cmd.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        cmd.setContentAreaFilled(false);
+        cmd.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SendMessage message = new SendMessage(MessageType.EMOJI, Service.getInstance().getUser().getID(), user.getID(), data.getId() + "");
+                sendMessage(message);
+                PublicEvent.getInstance().getEventChat().sendMessage(message);
+            }
+            
+        });
+        return cmd;
+    }
+    
+    private void sendMessage(SendMessage data){
+        Service.getInstance().getClient().emit("send_to_user", data.toJSONObject());
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -122,10 +153,10 @@ public class Panel_More extends javax.swing.JPanel {
             .addGap(0, 84, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
-    private void clearSelected(){
-        for (Component c : panelHeader.getComponents()){
-            if (c instanceof OptionButton){
-                ((OptionButton)c).setSelected(false);
+    private void clearSelected() {
+        for (Component c : panelHeader.getComponents()) {
+            if (c instanceof OptionButton) {
+                ((OptionButton) c).setSelected(false);
             }
         }
     }

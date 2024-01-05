@@ -119,7 +119,7 @@ public class Service {
     private void sendToClient(SendMessage data){
         for(Client c : listClient){
             if(c.getUser().getID() == data.getToUserID()){
-                c.getClient().sendEvent("receive_ms", new ReceiveMessage(data.getFromUserID(), data.getText()));
+                c.getClient().sendEvent("receive_ms", new ReceiveMessage(data.getMessageType(),data.getFromUserID(), data.getText()));
             }
         }
     }

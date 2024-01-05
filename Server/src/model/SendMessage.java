@@ -1,20 +1,20 @@
 package model;
 
 public class SendMessage {
+    
+    private int messageType;
     private int fromUserID;
     private int toUserID;
     private String text;
 
-    public SendMessage() {
+    public int getMessageType() {
+        return messageType;
     }
 
-    public SendMessage(int fromUserID, int toUserID, String text) {
-        this.fromUserID = fromUserID;
-        this.toUserID = toUserID;
-        this.text = text;
+    public void setMessageType(int messageType) {
+        this.messageType = messageType;
     }
 
-    
     public int getFromUserID() {
         return fromUserID;
     }
@@ -38,4 +38,16 @@ public class SendMessage {
     public void setText(String text) {
         this.text = text;
     }
+
+    public SendMessage() {
+    }
+
+    public SendMessage(int messageType, int fromUserID, int toUserID, String text) {
+        this.messageType = messageType;
+        this.fromUserID = fromUserID;
+        this.toUserID = toUserID;
+        this.text = text;
+    }
+    
+    
 }

@@ -11,25 +11,26 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JLayer;
 import javax.swing.JLayeredPane;
 import javax.swing.border.EmptyBorder;
 
 public class Chat_Item extends javax.swing.JLayeredPane {
-    
+
     private JLabel label;
 
     public Chat_Item() {
         initComponents();
         txt.setEditable(false);
-        txt.setBackground(new Color(0,0,0,0));
+        txt.setBackground(new Color(0, 0, 0, 0));
         txt.setOpaque(false);
     }
-    
-    public void setText(String text){
+
+    public void setText(String text) {
         txt.setText(text);
     }
-    
-    public void setUserProfile(String user){
+
+    public void setUserProfile(String user) {
         JLayeredPane layer = new JLayeredPane();
         layer.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
         layer.setBorder(new EmptyBorder(10, 10, 0, 10));
@@ -44,9 +45,9 @@ public class Chat_Item extends javax.swing.JLayeredPane {
         layer.add(cmd);
         add(layer, 0);
     }
-    
-    public void setImage(boolean right, Icon... image){
-        if(image.length>0){
+
+    public void setImage(boolean right, Icon... image) {
+        if (image.length > 0) {
             JLayeredPane layer = new JLayeredPane();
             layer.setLayout(new FlowLayout(right ? FlowLayout.RIGHT : FlowLayout.LEFT));
             layer.setBorder(new EmptyBorder(0, 5, 0, 5));
@@ -56,7 +57,8 @@ public class Chat_Item extends javax.swing.JLayeredPane {
             add(layer);
         }
     }
-    public void setImage(boolean right, String... image){
+
+    public void setImage(boolean right, String... image) {
         JLayeredPane layer = new JLayeredPane();
         layer.setLayout(new FlowLayout(right ? FlowLayout.RIGHT : FlowLayout.LEFT));
         layer.setBorder(new EmptyBorder(0, 5, 0, 5));
@@ -65,8 +67,8 @@ public class Chat_Item extends javax.swing.JLayeredPane {
         layer.add(chatImage);
         add(layer);
     }
-    
-    public void setFile(String fileName, String fileSize){
+
+    public void setFile(String fileName, String fileSize) {
         JLayeredPane layer = new JLayeredPane();
         layer.setLayout(new FlowLayout(FlowLayout.LEFT));
         layer.setBorder(new EmptyBorder(0, 5, 0, 5));
@@ -75,8 +77,17 @@ public class Chat_Item extends javax.swing.JLayeredPane {
         layer.add(chatFile);
         add(layer);
     }
-    
-    public void setTime(String time){
+
+    public void setEmoji(boolean right, Icon icon) {
+        JLayeredPane layer = new JLayeredPane();
+        layer.setLayout(new FlowLayout(right ? FlowLayout.RIGHT : FlowLayout.LEFT));
+        layer.setBorder(new EmptyBorder(0, 5, 0, 5));
+        layer.add(new JLabel(icon));
+        add(layer);
+        setBackground(null);
+    }
+
+    public void setTime(String time) {
         JLayeredPane layer = new JLayeredPane();
         layer.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         layer.setBorder(new EmptyBorder(0, 5, 10, 5));
@@ -86,19 +97,19 @@ public class Chat_Item extends javax.swing.JLayeredPane {
         layer.add(label);
         add(layer);
     }
-    
-    public void hideText(){
+
+    public void hideText() {
         txt.setVisible(false);
     }
-    
-    public void sendSuccess(){
-        if(label != null){
+
+    public void sendSuccess() {
+        if (label != null) {
             label.setIcon(new ImageIcon(getClass().getResource("/icon/check_mark_icon.png")));
         }
     }
-    
-    public void seen(){
-        if(label != null){
+
+    public void seen() {
+        if (label != null) {
             label.setIcon(new ImageIcon(getClass().getResource("/icon/check_marks_icon.png")));
         }
     }
@@ -119,9 +130,11 @@ public class Chat_Item extends javax.swing.JLayeredPane {
     @Override
     protected void paintComponent(Graphics grphcs) {
         Graphics2D g2 = (Graphics2D) grphcs;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(getBackground());
-        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+        if (getBackground() != null) {
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(getBackground());
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+        }
         super.paintComponent(grphcs);
     }
 

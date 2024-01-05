@@ -1,5 +1,7 @@
 package component;
 
+import app.MessageType;
+import emoji.Emogi;
 import java.awt.Adjustable;
 import java.awt.Color;
 import java.awt.event.AdjustmentEvent;
@@ -17,36 +19,51 @@ public class Chat_Body extends javax.swing.JPanel {
     public Chat_Body() {
         initComponents();
         init();
-        
+
     }
 
-    private void init(){
+    private void init() {
         body.setLayout(new MigLayout("fillx", "", "5[]5"));
         sp.setVerticalScrollBar(new ScrollBar());
         sp.getVerticalScrollBar().setBackground(Color.WHITE);
     }
-    
-    public void addItemLeft(ReceiveMessage data){
-        Chat_Left item = new Chat_Left();
-        item.setText(data.getText());
-        item.setTime();
-        body.add(item, "wrap, w 100::80%");
+
+    public void addItemLeft(ReceiveMessage data) {
+        if (data.getMessageType() == MessageType.TEXT) {
+            Chat_Left item = new Chat_Left();
+            item.setText(data.getText());
+            item.setTime();
+            body.add(item, "wrap, w 100::80%");
+        } else if (data.getMessageType() == MessageType.EMOJI){
+            Chat_Left item = new Chat_Left();
+            item.setEmoji(Emogi.getInstance().getImoji(Integer.valueOf(data.getText())).getIcon());
+            item.setTime();
+            body.add(item, "wrap, w 100::80%");
+        }
         repaint();
         revalidate();
-    }  
-    
-    public void addItemRight(SendMessage data){
-        Chat_Right item = new Chat_Right();
-        item.setText(data.getText()); 
-        item.setTime();
-        item.setSeenStatus();
-        body.add(item, "wrap, al right, w 100::80%");
+    }
+
+    public void addItemRight(SendMessage data) {
+        if (data.getMessageType() == MessageType.TEXT) {
+            Chat_Right item = new Chat_Right();
+            item.setText(data.getText());
+            item.setSeenStatus();
+            body.add(item, "wrap, al right, w 100::80%");
+            item.setTime();
+        } else if (data.getMessageType() == MessageType.EMOJI){
+            Chat_Right item = new Chat_Right();
+            item.setEmoji(Emogi.getInstance().getImoji(Integer.valueOf(data.getText())).getIcon());        
+            body.add(item, "wrap, al right, w 100::80%");
+            item.setSeenStatus();
+            item.setTime();
+        }
         repaint();
         revalidate();
         scrollToBottom();
-    } 
-    
-    public void addItemLeft(String text, String user, String[] image){
+    }
+
+    public void addItemLeft(String text, String user, String[] image) {
         Chat_Left_With_Profile item = new Chat_Left_With_Profile();
         item.setText(text);
         item.setImage(image);
@@ -55,21 +72,21 @@ public class Chat_Body extends javax.swing.JPanel {
         body.add(item, "wrap, w 100::80%");
         body.repaint();
         body.revalidate();
-    }  
-    
-    public void addItemRight(String text, String[] image){
+    }
+
+    public void addItemRight(String text, String[] image) {
         Chat_Right item = new Chat_Right();
-        item.setText(text); 
+        item.setText(text);
         item.setImage(image);
         item.setTime();
         item.setSeenStatus();
         body.add(item, "wrap, al right, w 100::80%");
         body.repaint();
-        body.revalidate();  
+        body.revalidate();
         scrollToBottom();
-    } 
-    
-    public void addItemFileLeft(String text, String user, String fileName, String fileSize){
+    }
+
+    public void addItemFileLeft(String text, String user, String fileName, String fileSize) {
         Chat_Left_With_Profile item = new Chat_Left_With_Profile();
         item.setText(text);
         item.setFile(fileName, fileSize);
@@ -78,32 +95,33 @@ public class Chat_Body extends javax.swing.JPanel {
         body.add(item, "wrap, w 100::80%");
         body.repaint();
         body.revalidate();
-    } 
-    
-    public void addItemFileRight(String text, String fileName, String fileSize){
+    }
+
+    public void addItemFileRight(String text, String fileName, String fileSize) {
         Chat_Right item = new Chat_Right();
-        item.setText(text); 
+        item.setText(text);
         item.setFile(fileName, fileSize);
         item.setTime();
         item.setSeenStatus();
         body.add(item, "wrap, al right, w 100::80%");
         body.repaint();
         body.revalidate();
-    } 
-    
-    public void addDate(String date){
+    }
+
+    public void addDate(String date) {
         Chat_Date item = new Chat_Date();
         item.setDate(date);
         body.add(item, "wrap, al center");
         body.repaint();
         body.revalidate();
     }
-    
-    public void clearChat(){
+
+    public void clearChat() {
         body.removeAll();
         repaint();
         revalidate();
     }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

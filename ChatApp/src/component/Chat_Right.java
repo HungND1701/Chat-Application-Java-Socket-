@@ -29,6 +29,10 @@ public class Chat_Right extends javax.swing.JLayeredPane {
         txt.setImage(false, image);
     }
     
+    public void setEmoji(Icon icon){
+        txt.hideText();
+        txt.setEmoji(true, icon);
+    }
     public void setTime(){ // add time later
         LocalTime now = LocalTime.now();
         System.out.println(now.format(DateTimeFormatter.ofPattern("HH:mm")));
