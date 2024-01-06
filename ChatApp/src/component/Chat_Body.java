@@ -30,7 +30,7 @@ public class Chat_Body extends javax.swing.JPanel {
     public void addItemLeft(Receive_Message data){
         Chat_Left item = new Chat_Left();
         item.setText(data.getText());
-        item.setTime();
+        item.setTime(data.getTime());
         body.add(item, "wrap, w 100::80%");
         repaint();
         revalidate();
@@ -40,7 +40,7 @@ public class Chat_Body extends javax.swing.JPanel {
         Chat_Right item = new Chat_Right();
         item.setText(data.getText()); 
 //        item.setImage(image);
-        item.setTime();
+        item.setTime(data.getTime());
         item.setSeenStatus();
         body.add(item, "wrap, al right, w 100::80%");
         repaint();
@@ -63,7 +63,7 @@ public class Chat_Body extends javax.swing.JPanel {
         Chat_Right item = new Chat_Right();
         item.setText(text); 
         item.setImage(image);
-        item.setTime();
+//        item.setTime();
         item.setSeenStatus();
         body.add(item, "wrap, al right, w 100::80%");
         body.repaint();
@@ -86,7 +86,7 @@ public class Chat_Body extends javax.swing.JPanel {
         Chat_Right item = new Chat_Right();
         item.setText(text); 
         item.setFile(fileName, fileSize);
-        item.setTime();
+//        item.setTime();
         item.setSeenStatus();
         body.add(item, "wrap, al right, w 100::80%");
         body.repaint();

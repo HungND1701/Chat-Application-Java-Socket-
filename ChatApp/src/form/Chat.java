@@ -54,10 +54,33 @@ public class Chat extends javax.swing.JPanel {
             @Override
             public void initMessage(List<Send_Message> list) {
                 if(!list.isEmpty()){
+                    String date = "";
                     for(Send_Message message: list){
                         if(message.getFromUserID()==Service.getInstance().getUser().getID()){
+                            String time = message.getTime();
+                            int spaceIndex = time.indexOf(" ");
+                            String datePart = time.substring(0, spaceIndex);
+                            String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
+                            if(!date.equals(datePart)){
+                                date = datePart;
+                                chatBody.addDate(date);
+                                message.setTime(timePart);
+                            }else{
+                                message.setTime(timePart);
+                            }
                             chatBody.addItemRight(message);
                         }else{
+                            String time = message.getTime();
+                            int spaceIndex = time.indexOf(" ");
+                            String datePart = time.substring(0, spaceIndex);
+                            String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
+                            if(!date.equals(datePart)){
+                                date = datePart;
+                                chatBody.addDate(date);
+                                message.setTime(timePart);
+                            }else{
+                                message.setTime(timePart);
+                            }
                             chatBody.addItemLeft(new Receive_Message(message.getFromUserID(), message.getText(), message.getTime()));
                         }
                     }
