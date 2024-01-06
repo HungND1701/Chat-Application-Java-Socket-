@@ -7,6 +7,8 @@ import io.socket.emitter.Emitter;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import model.Receive_Message;
+import model.Send_Message;
 import model.User;
 
 public class Service {
@@ -44,9 +46,43 @@ public class Service {
                 public void call(Object... os) {
                     List<User> users = new ArrayList<>();
                     for(Object o: os){
-                        users.add(new User(o));
+                        User u = new User(o);
+                        if(u.getID() != user.getID()){
+                            users.add(u);
+                        }
+                        
                     }
                     PublicEvent.getInstance().getEventMenuLeft().newUser(users);
+                }
+            });
+            client.on("user_status", new Emitter.Listener() {
+                @Override
+                public void call(Object... os) {
+                    int userID = (Integer) os[0];
+                    boolean status = (Boolean) os[1];
+                    if(status){
+                        PublicEvent.getInstance().getEventMenuLeft().userConnect(userID);
+                    }else{
+                        PublicEvent.getInstance().getEventMenuLeft().userDisconnect(userID);
+                    }
+                }
+            });
+            client.on("receive_message", new Emitter.Listener() {
+                @Override
+                public void call(Object... os) {
+                    Receive_Message message = new Receive_Message(os[0]);
+                    PublicEvent.getInstance().getEventChat().receiveMessage(message);
+                }
+            });
+            client.on("list_message", new Emitter.Listener() {
+                @Override
+                public void call(Object... os) {
+                    List<Send_Message> list = new ArrayList<>();
+                    for(Object o: os){
+                        Send_Message ms = new Send_Message(o);
+                        list.add(ms);
+                    }
+                    PublicEvent.getInstance().getEventChat().initMessage(list);
                 }
             });
             client.open();

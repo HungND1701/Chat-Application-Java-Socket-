@@ -1,23 +1,45 @@
 package component;
 
 import java.awt.Color;
+import model.User;
 
 public class Chat_Title extends javax.swing.JPanel {
 
+    private User user;
+
+    public User getUser() {
+        return user;
+    }
+    
     public Chat_Title() {
         initComponents();
     }
 
-    public void setUserName(String userName){
-        lbName.setText(userName);
+    public void setUserName(User user){
+        this.user = user;
+        lbName.setText(user.getUsername());
+        if(user.isOnline()){
+            statusActive();
+        }else{
+            setStatusText("Offline");
+        }
     }
-    
-    public void statusActive(){
+    public void updateUser(User user){
+        if(this.user==user){ // neu title user la user thay doi trang thai thi cap nhat 
+            lbName.setText(user.getUsername());
+            if(user.isOnline()){
+                statusActive();
+            }else{
+                setStatusText("Offline");
+            }
+        }
+    }
+    private void statusActive(){
         lbStatus.setText("Active Now");
         lbStatus.setForeground(new Color(40, 147, 59));
     }
     
-    public void setStatusText(String status){
+    private void setStatusText(String status){
         lbStatus.setText(status);
         lbStatus.setForeground(new Color(160, 160, 160));
     }

@@ -2,11 +2,17 @@ package service;
 
 import connection.DatabaseConnection;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import model.Client;
+import model.Conversation;
+import model.Login;
 import model.Message;
 import model.Register;
+import model.Send_Message;
 import model.User;
 
 public class ServiceUser {
@@ -16,6 +22,24 @@ public class ServiceUser {
     public ServiceUser(){
         this.con = DatabaseConnection.getInstance().getConnection();
     }
+    public User login(Login login) throws SQLException{ 
+        User data = null;
+        PreparedStatement p = con.prepareStatement("SELECT * FROM users WHERE username = BINARY(?) AND password = BINARY(?)");
+        p.setString(1, login.getUsername());
+        p.setString(2, login.getPassword());
+        ResultSet rs = p.executeQuery();
+        if(rs.next()){
+            data = new User(rs.getInt(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4),
+                        rs.getString(5),
+                        (rs.getInt(6) != 0));
+        }
+        rs.close();
+        p.close();
+        return data;
+    }
     
     public Message register(Register data){
         Message message = new Message();
@@ -24,7 +48,7 @@ public class ServiceUser {
             p.setString(1, data.getUserName());
             ResultSet rs = p.executeQuery();
             System.out.println("1");
-            if(rs.first()){
+            if(rs.next()){
                 System.out.println("2");
                 message.setAction(false);
                 message.setMessage("User Already Exit");
@@ -43,7 +67,7 @@ public class ServiceUser {
                 p.setString(3, user.getNickname());
                 p.executeUpdate();
                 rs = p.getGeneratedKeys();
-                rs.first();
+                rs.next();
                 int userID = rs.getInt(1);
                 rs.close();
                 p.close();
@@ -76,19 +100,141 @@ public class ServiceUser {
         return message;
     }
     
-    public List<User> getUserOnline(int exitUser) throws SQLException {
+    public List<User> getUser(int exitUser) throws SQLException {
         List<User> list = new ArrayList<>();
-        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE isOnline = '1' AND id <> ?");
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE id <> ?");
         p.setInt(1, exitUser);
         ResultSet rs = p.executeQuery();
         while(rs.next()){
-            list.add(new User(rs.getInt(1),rs.getString(2),"",rs.getString(3),rs.getString(4), true));
+            int id = rs.getInt(1);
+            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id)));
         }
         rs.close();
         p.close();
         return list;
     }
     
+    public boolean checkUserStatus(int id){
+        List<Client> clients = Service.getInstance(null).getListClient();
+        for(Client c : clients){
+            if(c.getUser().getID()==id){
+                return true;
+            }
+        }
+        return false;
+    }
+    public void addMessage(Send_Message data) {
+        System.out.println("1");
+        try {
+            System.out.println("2");
+            int fromUserID = data.getFromUserID();
+            int toUserID = data.getToUserID();
+            String text = data.getText();
+            String timeString = data.getTime();
+            //cover timeString to timestamp type
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime localDateTime = LocalDateTime.parse(timeString, formatter);
+            Timestamp timestamp = Timestamp.valueOf(localDateTime);
+            //check messages
+            System.out.println("3");
+            PreparedStatement p = con.prepareStatement("SELECT conversation_id FROM messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)");
+            p.setInt(1, fromUserID);
+            p.setInt(2, toUserID);
+            p.setInt(3, toUserID);
+            p.setInt(4, fromUserID);
+            ResultSet rs = p.executeQuery();
+            System.out.println("4");
+            if(rs.next()){// co message -> co conversation -> co user_conversation-> co role_conversation
+                System.out.println("5");
+                int conversation_id = rs.getInt(1);
+                rs.close();
+                p.close();
+                p = con.prepareStatement("INSERT INTO messages(conversation_id, sender_id, receiver_id, content, send_time) VALUES(?,?,?,?,?)");
+                p.setInt(1, conversation_id);
+                p.setInt(2, fromUserID);
+                p.setInt(3, toUserID);
+                p.setString(4, text);
+                p.setTimestamp(5, timestamp);
+                p.executeUpdate();
+                System.out.println("6");
+                p.close();
+            }else{
+                rs.close();
+                p.close();
+                System.out.println("7");
+                con.setAutoCommit(false);
+                p = con.prepareStatement("INSERT INTO conversations(is_group) VALUES(?)", PreparedStatement.RETURN_GENERATED_KEYS);
+                p.setInt(1, 0);
+                p.executeUpdate();
+                System.out.println("8");
+                rs = p.getGeneratedKeys();
+                rs.next();
+                int conversation_id = rs.getInt(1);
+                rs.close();
+                p.close();
+                p = con.prepareStatement("INSERT INTO user_conversation(conversation_id, user_id, role_id) VALUES(?,?,?), (?,?,?)");
+                p.setInt(1, conversation_id);
+                p.setInt(2, fromUserID);
+                p.setInt(3, 1);
+                p.setInt(4, conversation_id);
+                p.setInt(5, toUserID);
+                p.setInt(6, 1);
+                p.executeUpdate();
+                p.close();
+                System.out.println("9");
+                p = con.prepareStatement("INSERT INTO messages(conversation_id, sender_id, receiver_id, content, send_time) VALUES(?,?,?,?,?)");
+                p.setInt(1, conversation_id);
+                p.setInt(2, fromUserID);
+                p.setInt(3, toUserID);
+                p.setString(4, text);
+                p.setTimestamp(5, timestamp);
+                p.executeUpdate();
+                System.out.println("10");
+                p.close();
+                con.commit();
+                con.setAutoCommit(true);
+            }
+    
+        } catch (SQLException e) {
+            System.err.println(e);
+            try {
+                if(con.getAutoCommit()==false){
+                    System.out.println("6");
+                    con.rollback();
+                    con.setAutoCommit(true);
+                }
+            } catch (SQLException e1) {
+                
+            }
+        }
+    }
+    
+    public List<Send_Message> getMessagesConversation(Conversation data){
+        List<Send_Message> listMessages = new ArrayList<>();
+        try {
+            int sender_id = data.getSender_id();
+            int receiver_id = data.getReceiver_id();
+            PreparedStatement p = con.prepareStatement("SELECT conversations.id, sender_id, receiver_id, content, send_time FROM messages INNER JOIN conversations ON conversations.id = messages.conversation_id WHERE is_group = 0 AND((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) ORDER BY send_time ASC;");
+            p.setInt(1, sender_id);
+            p.setInt(2, receiver_id);
+            p.setInt(3, receiver_id);
+            p.setInt(4, sender_id);
+            ResultSet rs = p.executeQuery();
+            while(rs.next()){
+                int fromUserID = rs.getInt(2);
+                int toUserID = rs.getInt(3);
+                String text = rs.getString(4);
+                Timestamp timestamp = rs.getTimestamp(5);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                String formattedDateTime = timestamp.toLocalDateTime().format(formatter);
+                Send_Message message = new Send_Message(fromUserID, toUserID, text, formattedDateTime);
+                listMessages.add(message);
+            }
+            return listMessages;
+        } catch (SQLException e) {
+            return new ArrayList<>();
+        }
+    }
     public User verifyUser(String userName, String password) {
         try {
             PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM users WHERE username = ? AND password = ?");

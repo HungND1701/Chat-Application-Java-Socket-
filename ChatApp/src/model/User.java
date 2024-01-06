@@ -100,14 +100,25 @@ public class User {
     
     public User(Object json) {
         JSONObject obj  = (JSONObject) json;
-        System.out.println(obj.toString());
         try {
-            ID = obj.getInt("id"); 
-            username = obj.getString("username");
-            password = obj.getString("password");
-            nickname = obj.getString("nickname");
-            avatar = obj.getString("avatar");
-            isOnline = obj.getBoolean("online");
+            if(obj.has("id")){
+                ID = obj.getInt("id"); 
+            }
+            if(obj.has("username")){
+                username = obj.getString("username");
+            }
+            if(obj.has("password")){
+                password = obj.getString("password");
+            }
+            if(obj.has("nickname")){
+                nickname = obj.getString("nickname");
+            }
+            if(obj.has("avatar")){
+                avatar = obj.getString("avatar");
+            }
+            if(obj.has("online")){
+                isOnline = obj.getBoolean("online");
+            } 
         } catch (JSONException e) {
             System.err.println(e);
         }

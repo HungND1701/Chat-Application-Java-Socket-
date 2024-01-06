@@ -10,6 +10,8 @@ import java.awt.Toolkit;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import model.Conversation;
+import model.User;
 import service.Service;
 import swing.ComponentResizer;
 
@@ -48,7 +50,23 @@ public class Main extends javax.swing.JFrame {
             @Override
             public void initChat() {
                 home.setVisible(true);
+                login.setVisible(false);
+                System.out.println("client send userID : "+ Service.getInstance().getUser().getID());
+                
                 Service.getInstance().getClient().emit("list_user", Service.getInstance().getUser().getID());
+            }
+
+            @Override
+            public void selectUserChat(User user) {
+                home.setUserChat(user);
+                System.out.println("Convertion from user : "+ Service.getInstance().getUser().getID() +"to User: "+ user.getID());
+                Conversation conversation = new Conversation(Service.getInstance().getUser().getID(), user.getID());
+                Service.getInstance().getClient().emit("list_message", conversation.toJSONObject());
+            }
+
+            @Override
+            public void updateUserChat(User user) {
+                home.updateUserChat(user);
             }
         });
         
@@ -62,9 +80,6 @@ public class Main extends javax.swing.JFrame {
             public void saveImage(Icon image) {
                 System.out.println("save");
             }
-            
-            
-
         });
     }
     
