@@ -8,16 +8,31 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
+import model.Send_Message;
+import model.User;
 import net.miginfocom.swing.MigLayout;
+import service.Service;
 import swing.JIMSendTextPane;
 import swing.ScrollBar;
 
 public class Chat_Bottom extends javax.swing.JPanel {
+    
+    private User user;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public Chat_Bottom() {
         initComponents();
@@ -59,7 +74,9 @@ public class Chat_Bottom extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 String text = txt.getText().trim();
                 if(!text.equals("")) {
-                    PublicEvent.getInstance().getEventChat().sendMessage(text);
+                    Send_Message message = new Send_Message(Service.getInstance().getUser().getID(), user.getID(), text, getTimeNow());
+                    send(message);
+                    PublicEvent.getInstance().getEventChat().sendMessage(message);
                     txt.setText("");
                     txt.grabFocus();
                     refresh();
@@ -71,6 +88,15 @@ public class Chat_Bottom extends javax.swing.JPanel {
         });
         panel.add(cmd);
         add(panel);
+    }
+    private void send(Send_Message data){
+        Service.getInstance().getClient().emit("send_to_user", data.toJSONObject());
+    }
+    private String getTimeNow(){
+        LocalDateTime currentTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedDateTime = currentTime.format(formatter);
+        return formattedDateTime;
     }
     
     private void refresh(){

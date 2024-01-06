@@ -4,10 +4,8 @@
  */
 package testing;
 
-/**
- *
- * @author Acer
- */
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 public class Main extends javax.swing.JPanel {
 
     /**
@@ -17,6 +15,12 @@ public class Main extends javax.swing.JPanel {
         initComponents();
     }
 
+    public static void main(String[] args) {
+        LocalDateTime currentTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedDateTime = currentTime.format(formatter);
+        System.out.println(formattedDateTime);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

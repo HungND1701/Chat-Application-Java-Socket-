@@ -6,16 +6,25 @@ import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
+import com.corundumstudio.socketio.listener.DisconnectListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.JTextArea;
+import model.Client;
+import model.Conversation;
+import model.Login;
 import model.Message;
+import model.Receive_Message;
 import model.Register;
+import model.Send_Message;
 import model.User;
 
 public class Service {
     private static Service instance;
     private SocketIOServer server;
     private ServiceUser serviceUser;
+    private List<Client> listClient;
     private JTextArea textArea;
     private final int PORT_NUMBER = 9999;
     
@@ -29,6 +38,7 @@ public class Service {
     private Service(JTextArea textArea){
         this.textArea = textArea;
         serviceUser = new ServiceUser();
+        listClient = new ArrayList<>();
     }
     
     public void startServer(){
@@ -49,21 +59,106 @@ public class Service {
                 if(message.isAction()){
                     textArea.append("User Register : " + t.getUserName()+ " || Pass : "+ t.getPassword()+ " || nickname : "+ t.getNickname()+"\n");
                     server.getBroadcastOperations().sendEvent("list_user", (User) message.getData());
+                    addClient(sioc, (User) message.getData());
                 }
             }
         });
+        server.addEventListener("login", Login.class, new DataListener<Login>() {
+            @Override
+            public void onData(SocketIOClient sioc, Login t, AckRequest ar) throws Exception {
+                User login = serviceUser.login(t);
+                if(login != null){
+                    ar.sendAckData(true, login);
+                    addClient(sioc, login);
+                    userConnect(login.getID());
+                }else{
+                    ar.sendAckData(false);
+                }
+            }
+        });
+        
         server.addEventListener("list_user", Integer.class, new DataListener<Integer>() {
             @Override
             public void onData(SocketIOClient sioc, Integer t, AckRequest ar) throws Exception {
                 try {
-                    List<User> list = serviceUser.getUserOnline(t);
+                    System.out.println("server recv userID : "+ t+ "\n");
+                    List<User> list = serviceUser.getUser(t);
+                    System.out.println(list.toString());
                     sioc.sendEvent("list_user", list.toArray());
                 } catch (Exception e) {
                     System.err.println(e);
                 }
             }
         });
+        server.addEventListener("list_message", Conversation.class, new DataListener<Conversation>() {
+            @Override
+            public void onData(SocketIOClient sioc, Conversation t, AckRequest ar) throws Exception {
+                try {
+                    System.out.println("Convertion from user : "+ t.getSender_id() +"to User: "+ t.getReceiver_id());
+                    List<Send_Message> list = serviceUser.getMessagesConversation(t);
+                    System.out.println(Arrays.toString(list.toArray()));
+                    sioc.sendEvent("list_message", list.toArray());
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        });
+        
+        server.addEventListener("send_to_user", Send_Message.class, new DataListener<Send_Message>() {
+            @Override
+            public void onData(SocketIOClient sioc, Send_Message t, AckRequest ar) throws Exception {
+                try {
+                    serviceUser.addMessage(t);
+                    sendToClient(t);
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        });
+        
+        server.addDisconnectListener(new DisconnectListener(){
+            @Override
+            public void onDisconnect(SocketIOClient sioc) {
+                int UserID = removeClient(sioc);
+                if(UserID!=0){
+                    userDisconect(UserID);
+                }
+            }
+            
+        });
         server.start();
         textArea.append("\nServer has Start on port : " + PORT_NUMBER + "\n");
     }
+    private void userConnect(int userID){
+        server.getBroadcastOperations().sendEvent("user_status", userID, true);
+    }
+    private void userDisconect(int userID){
+        server.getBroadcastOperations().sendEvent("user_status", userID, false);
+    }
+    private void addClient(SocketIOClient client, User user){
+        listClient.add(new Client(client, user));
+    }
+    private void sendToClient(Send_Message data){
+        for(Client c: listClient){
+            if(c.getUser().getID() == data.getToUserID()){
+                c.getClient().sendEvent("receive_message", new Receive_Message(data.getFromUserID(), data.getText(), data.getTime()));
+                break;
+            }
+        }
+    }
+    public int removeClient(SocketIOClient client){
+        for(Client d: listClient){
+            if(d.getClient() == client){
+                listClient.remove(d);
+                return d.getUser().getID();
+            }
+        }
+        return 0;
+    }
+
+    public List<Client> getListClient() {
+        return listClient;
+    }
+    
+    
 }
