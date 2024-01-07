@@ -1,12 +1,22 @@
 package model;
 
+import app.MessageType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Receive_Message {
-    int fromUserID;
-    String text;
-    String time;
+    private int fromUserID;
+    private String text;
+    private String time;
+    private MessageType messageType;
+
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
+    }
 
     public String getTime() {
         return time;
@@ -41,16 +51,19 @@ public class Receive_Message {
             fromUserID = obj.getInt("fromUserID");
             text = obj.getString("text");
             time = obj.getString("time");
+            messageType = MessageType.toMessageType(obj.getInt("messageType"));
         } catch (JSONException e) {
             System.err.println(e);
         }
     }
 
-    public Receive_Message(int fromUserID, String text, String time) {
+    public Receive_Message(int fromUserID, String text, String time, MessageType messageType) {
         this.fromUserID = fromUserID;
         this.text = text;
         this.time = time;
+        this.messageType = messageType;
     }
+
     
     public JSONObject toJSONObject(){
         try {
@@ -58,6 +71,7 @@ public class Receive_Message {
             json.put("fromUserID", fromUserID);
             json.put("text", text);
             json.put("time", time);
+            json.put("messageType", messageType.getValue());
             return json;
         } catch (JSONException e) {
             return null;

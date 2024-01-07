@@ -1,9 +1,18 @@
 package model;
 
 public class Receive_Message {
-    int fromUserID;
-    String text;
-    String time;
+    private int fromUserID;
+    private String text;
+    private String time;
+    private int messageType;
+
+    public int getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(int messageType) {
+        this.messageType = messageType;
+    }
 
     public String getTime() {
         return time;
@@ -32,10 +41,11 @@ public class Receive_Message {
     public Receive_Message() {
     }
     
-    public Receive_Message(int fromUserID, String text, String time) {
+    public Receive_Message(int fromUserID, String text, String time, int messageType) {
         this.fromUserID = fromUserID;
         this.text = text;
         this.time = time;
+        this.messageType = messageType;
     }
     
 }
