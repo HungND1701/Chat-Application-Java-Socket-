@@ -4,11 +4,14 @@
  */
 package form;
 
+import app.MessageType;
 import component.Chat_Body;
 import component.Chat_Bottom;
 import component.Chat_Title;
 import event.EventChat;
 import event.PublicEvent;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import model.Conversation;
 import model.Receive_Message;
@@ -26,6 +29,7 @@ public class Chat extends javax.swing.JPanel {
     private Chat_Title chatTitle;
     private Chat_Body chatBody;
     private Chat_Bottom chatBottom;
+    private String lastDate; 
     
     public Chat() {
         initComponents();
@@ -41,12 +45,30 @@ public class Chat extends javax.swing.JPanel {
         PublicEvent.getInstance().addEventChat(new EventChat() {
             @Override
             public void sendMessage(Send_Message data) {
-               chatBody.addItemRight(data);
+                String time = data.getTime();
+                int spaceIndex = time.indexOf(" ");
+                String datePart = time.substring(0, spaceIndex);
+                String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
+                if(!datePart.equals(lastDate)){
+                    lastDate = datePart;
+                    chatBody.addDate("Today");
+                }
+                data.setTime(timePart);
+                chatBody.addItemRight(data);
             }
 
             @Override
             public void receiveMessage(Receive_Message data) {
                 if(chatTitle.getUser().getID() == data.getFromUserID()){
+                    String time = data.getTime();
+                    int spaceIndex = time.indexOf(" ");
+                    String datePart = time.substring(0, spaceIndex);
+                    String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
+                    if(!datePart.equals(lastDate)){
+                        lastDate = datePart;
+                        chatBody.addDate("Today");
+                    }
+                    data.setTime(timePart);
                     chatBody.addItemLeft(data);
                 }
             }
@@ -55,6 +77,9 @@ public class Chat extends javax.swing.JPanel {
             public void initMessage(List<Send_Message> list) {
                 if(!list.isEmpty()){
                     String date = "";
+                    LocalDate currentDate = LocalDate.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYY-MM-dd");
+                    String today = currentDate.format(formatter);
                     for(Send_Message message: list){
                         if(message.getFromUserID()==Service.getInstance().getUser().getID()){
                             String time = message.getTime();
@@ -63,7 +88,11 @@ public class Chat extends javax.swing.JPanel {
                             String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
                             if(!date.equals(datePart)){
                                 date = datePart;
-                                chatBody.addDate(date);
+                                if(date.equals(today)){
+                                    chatBody.addDate("Today");
+                                }else{
+                                    chatBody.addDate(date);
+                                }
                                 message.setTime(timePart);
                             }else{
                                 message.setTime(timePart);
@@ -76,14 +105,19 @@ public class Chat extends javax.swing.JPanel {
                             String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
                             if(!date.equals(datePart)){
                                 date = datePart;
-                                chatBody.addDate(date);
+                                if(date.equals(today)){
+                                    chatBody.addDate("Today");
+                                }else{
+                                    chatBody.addDate(date);
+                                }
                                 message.setTime(timePart);
                             }else{
                                 message.setTime(timePart);
                             }
-                            chatBody.addItemLeft(new Receive_Message(message.getFromUserID(), message.getText(), message.getTime()));
+                            chatBody.addItemLeft(new Receive_Message(message.getFromUserID(), message.getText(), message.getTime(), message.getMessageType()));
                         }
                     }
+                    lastDate = date;
                 } 
             }
 

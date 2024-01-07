@@ -130,6 +130,7 @@ public class ServiceUser {
             int fromUserID = data.getFromUserID();
             int toUserID = data.getToUserID();
             String text = data.getText();
+            int messageType = data.getMessageType();
             String timeString = data.getTime();
             //cover timeString to timestamp type
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -149,12 +150,13 @@ public class ServiceUser {
                 int conversation_id = rs.getInt(1);
                 rs.close();
                 p.close();
-                p = con.prepareStatement("INSERT INTO messages(conversation_id, sender_id, receiver_id, content, send_time) VALUES(?,?,?,?,?)");
+                p = con.prepareStatement("INSERT INTO messages(conversation_id, sender_id, receiver_id, content, send_time, type) VALUES(?,?,?,?,?,?)");
                 p.setInt(1, conversation_id);
                 p.setInt(2, fromUserID);
                 p.setInt(3, toUserID);
                 p.setString(4, text);
                 p.setTimestamp(5, timestamp);
+                p.setInt(6, messageType);
                 p.executeUpdate();
                 System.out.println("6");
                 p.close();
@@ -182,12 +184,13 @@ public class ServiceUser {
                 p.executeUpdate();
                 p.close();
                 System.out.println("9");
-                p = con.prepareStatement("INSERT INTO messages(conversation_id, sender_id, receiver_id, content, send_time) VALUES(?,?,?,?,?)");
+                p = con.prepareStatement("INSERT INTO messages(conversation_id, sender_id, receiver_id, content, send_time, type) VALUES(?,?,?,?,?,?)");
                 p.setInt(1, conversation_id);
                 p.setInt(2, fromUserID);
                 p.setInt(3, toUserID);
                 p.setString(4, text);
                 p.setTimestamp(5, timestamp);
+                p.setInt(6, messageType);
                 p.executeUpdate();
                 System.out.println("10");
                 p.close();
@@ -214,7 +217,7 @@ public class ServiceUser {
         try {
             int sender_id = data.getSender_id();
             int receiver_id = data.getReceiver_id();
-            PreparedStatement p = con.prepareStatement("SELECT conversations.id, sender_id, receiver_id, content, send_time FROM messages INNER JOIN conversations ON conversations.id = messages.conversation_id WHERE is_group = 0 AND((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) ORDER BY send_time ASC;");
+            PreparedStatement p = con.prepareStatement("SELECT conversations.id, sender_id, receiver_id, content, send_time, type FROM messages INNER JOIN conversations ON conversations.id = messages.conversation_id WHERE is_group = 0 AND((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) ORDER BY send_time ASC;");
             p.setInt(1, sender_id);
             p.setInt(2, receiver_id);
             p.setInt(3, receiver_id);
@@ -225,9 +228,10 @@ public class ServiceUser {
                 int toUserID = rs.getInt(3);
                 String text = rs.getString(4);
                 Timestamp timestamp = rs.getTimestamp(5);
+                int messageType = rs.getInt(6);
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 String formattedDateTime = timestamp.toLocalDateTime().format(formatter);
-                Send_Message message = new Send_Message(fromUserID, toUserID, text, formattedDateTime);
+                Send_Message message = new Send_Message(fromUserID, toUserID, text, formattedDateTime, messageType);  // sua type sau 
                 listMessages.add(message);
             }
             return listMessages;

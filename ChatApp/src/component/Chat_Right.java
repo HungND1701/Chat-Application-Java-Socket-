@@ -24,7 +24,7 @@ public class Chat_Right extends javax.swing.JLayeredPane {
     }
     
     public void setImage(String... image){
-        txt.setImage(false, image);
+        txt.setImage(true, image);
     }
     
     public void setTime(String time){ // add time later
@@ -34,7 +34,10 @@ public class Chat_Right extends javax.swing.JLayeredPane {
     public void setSeenStatus(){ // add time later
         txt.seen();
     }
-    
+    public void setEmoji(Icon icon){
+        txt.hideText();
+        txt.setEmoji(true, icon);
+    }
     public void setFile(String fileName, String fileSize){
         txt.setFile(fileName, fileSize);
     }

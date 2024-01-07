@@ -1,5 +1,7 @@
 package component;
 
+import app.MessageType;
+import emoji.Emoji;
 import java.awt.Adjustable;
 import java.awt.Color;
 import java.awt.event.AdjustmentEvent;
@@ -28,21 +30,39 @@ public class Chat_Body extends javax.swing.JPanel {
     }
     
     public void addItemLeft(Receive_Message data){
-        Chat_Left item = new Chat_Left();
-        item.setText(data.getText());
-        item.setTime(data.getTime());
-        body.add(item, "wrap, w 100::80%");
+        if(data.getMessageType()== MessageType.TEXT){
+            Chat_Left item = new Chat_Left();
+            item.setText(data.getText());
+            item.setTime(data.getTime());
+            body.add(item, "wrap, w 100::80%");
+        }else if(data.getMessageType()== MessageType.EMOJI){
+            Chat_Left item = new Chat_Left();
+            item.setEmoji(Emoji.getInstance().getEmoji(Integer.valueOf(data.getText())).getIcon());
+            item.setTime(data.getTime());
+            body.add(item, "wrap, w 100::80%");
+        }else{
+            //send file
+        }
         repaint();
         revalidate();
     }  
     
     public void addItemRight(Send_Message data){
-        Chat_Right item = new Chat_Right();
-        item.setText(data.getText()); 
-//        item.setImage(image);
-        item.setTime(data.getTime());
-        item.setSeenStatus();
-        body.add(item, "wrap, al right, w 100::80%");
+        if(data.getMessageType()== MessageType.TEXT){
+            Chat_Right item = new Chat_Right();
+            item.setText(data.getText()); 
+            item.setTime(data.getTime());
+            item.setSeenStatus();
+            body.add(item, "wrap, al right, w 100::80%");
+        }else if(data.getMessageType()== MessageType.EMOJI){
+            Chat_Right item = new Chat_Right();
+            item.setEmoji(Emoji.getInstance().getEmoji(Integer.valueOf(data.getText())).getIcon());
+            item.setTime(data.getTime());
+            body.add(item, "wrap, al right, w 100::80%");
+        }else{
+            //send file
+        }
+        
         repaint();
         revalidate();
         scrollToBottom();
