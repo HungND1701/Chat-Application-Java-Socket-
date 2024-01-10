@@ -10,5 +10,6 @@ public interface EventMenuLeft {
     public void userConnect(int userID);
     public void userDisconnect(int userID);
     public void newConversation(List<User> users);
-    public void updateFriendList(int userID);
+    public void updateAddFriend(int userID);
+    public void updateUnfriend(int userID);
 }

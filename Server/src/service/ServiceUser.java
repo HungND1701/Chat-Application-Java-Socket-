@@ -197,6 +197,14 @@ public class ServiceUser {
         p.setInt(3, friend.getUser_id_1());
         p.executeUpdate();
     }
+    public void unfriend(Friend friend) throws SQLException{
+        PreparedStatement p = con.prepareStatement("DELETE FROM friend WHERE (user_id_1 = ? AND user_id_2 = ?) OR (user_id_1 = ? AND user_id_2 = ?)");
+        p.setInt(1, friend.getUser_id_1());
+        p.setInt(2, friend.getUser_id_2());
+        p.setInt(3, friend.getUser_id_2());
+        p.setInt(4, friend.getUser_id_1());
+        p.executeUpdate();
+    }
     public void rejectAddFriend(Friend friend) throws SQLException{
         PreparedStatement p = con.prepareStatement("UPDATE messages SET type = ? WHERE sender_id = ? AND receiver_id = ? AND type = 4");
         p.setInt(1, 5);

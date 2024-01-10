@@ -133,7 +133,7 @@ public class Menu_Left extends javax.swing.JPanel {
             }
 
             @Override
-            public void updateFriendList(int userID) {
+            public void updateAddFriend(int userID) {
                 Iterator<User> iterator = otherUser.iterator();
                 while (iterator.hasNext()) {
                     User u = iterator.next();
@@ -147,6 +147,22 @@ public class Menu_Left extends javax.swing.JPanel {
                     showFriend();
                 }
                 
+            }
+
+            @Override
+            public void updateUnfriend(int userID) {
+                Iterator<User> iterator = friendList.iterator();
+                while (iterator.hasNext()) {
+                    User u = iterator.next();
+                    if (u.getID() == userID) {
+                        iterator.remove();
+                        otherUser.add(u);
+                        break;
+                    }
+                }
+                if(menuFriend.isSelected()){
+                    showFriend();
+                }
             }
         });
         showMessage();

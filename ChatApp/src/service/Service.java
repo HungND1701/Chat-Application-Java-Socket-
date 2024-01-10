@@ -127,7 +127,7 @@ public class Service {
                 @Override
                 public void call(Object... os) {
                     int userID = (Integer) os[0];
-                    PublicEvent.getInstance().getEventMenuLeft().updateFriendList(userID);
+                    PublicEvent.getInstance().getEventMenuLeft().updateAddFriend(userID);
                     PublicEvent.getInstance().getEventMenuRight().removeOtherUserList(userID);
                     Send_Message message = new Send_Message(user.getID(), userID, "Accept", getTimeNow(), MessageType.TEXT);
                     client.emit("send_to_user", message.toJSONObject());
@@ -138,8 +138,27 @@ public class Service {
                 @Override
                 public void call(Object... os) {
                     int userID = (Integer) os[0];
-                    PublicEvent.getInstance().getEventMenuLeft().updateFriendList(userID);
+                    PublicEvent.getInstance().getEventMenuLeft().updateAddFriend(userID);
                     PublicEvent.getInstance().getEventMenuRight().removeOtherUserList(userID);
+                }
+            });
+            client.on("unfriend_success", new Emitter.Listener() {
+                @Override
+                public void call(Object... os) {
+                    User u = new User(os[0]);
+                    PublicEvent.getInstance().getEventMenuLeft().updateUnfriend(u.getID());
+                    PublicEvent.getInstance().getEventMenuRight().addOtherUserList(u);
+                    Send_Message message = new Send_Message(user.getID(), u.getID(), "Unfriend", getTimeNow(), MessageType.TEXT);
+                    client.emit("send_to_user", message.toJSONObject());
+                    PublicEvent.getInstance().getEventChat().sendMessage(message);
+                }
+            });
+            client.on("is_unfriended", new Emitter.Listener() {
+                @Override
+                public void call(Object... os) {
+                    User u = new User(os[0]);
+                    PublicEvent.getInstance().getEventMenuLeft().updateUnfriend(u.getID());
+                    PublicEvent.getInstance().getEventMenuRight().addOtherUserList(u);
                 }
             });
             client.open();
