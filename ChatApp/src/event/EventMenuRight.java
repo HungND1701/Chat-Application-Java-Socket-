@@ -9,4 +9,5 @@ public interface EventMenuRight {
     public void userDisconnect(int userID);
     public void setOtherUser(List<User> Users);
     public void removeOtherUserList(int userID);
+    public void addOtherUserList(User user);
 }

@@ -137,6 +137,12 @@ public class Menu_Right extends javax.swing.JPanel {
                 }
                 changeButton(user);
             }
+
+            @Override
+            public void addOtherUserList(User user1) {
+                otherUsers.add(user1);
+                changeButton(user);          
+            }
             
         });
                 
@@ -167,7 +173,7 @@ public class Menu_Right extends javax.swing.JPanel {
         btn.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Service.getInstance().getClient().emit("unfriend", new Friend(user.getID(), Service.getInstance().getUser().getID()));
+                Service.getInstance().getClient().emit("unfriend", new Friend(Service.getInstance().getUser().getID(), user.getID()).toJSONObject());
             }
         });
         setting.add(btn);

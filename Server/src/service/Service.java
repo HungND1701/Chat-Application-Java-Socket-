@@ -144,6 +144,25 @@ public class Service {
                 }
             }
         });
+        server.addEventListener("unfriend", Friend.class, new DataListener<Friend>() {
+            @Override
+            public void onData(SocketIOClient sioc, Friend t, AckRequest ar) throws Exception {
+                try {
+                    serviceUser.unfriend(t);
+                    User u1 = serviceUser.getUserByID(t.getUser_id_1());
+                    User u2 = serviceUser.getUserByID(t.getUser_id_2());
+                    // send event success
+                    sioc.sendEvent("unfriend_success", u2);
+                    for(Client c: listClient){
+                        if(c.getUser().getID() == t.getUser_id_2()){
+                            c.getClient().sendEvent("is_unfriended", u1);
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        });
         server.addEventListener("reject_add_friend", Friend.class, new DataListener<Friend>() {
             @Override
             public void onData(SocketIOClient sioc, Friend t, AckRequest ar) throws Exception {
