@@ -8,7 +8,9 @@ import component.Item_People;
 import event.EventMenuLeft;
 import event.PublicEvent;
 import java.awt.Component;
+import java.awt.Label;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import model.User;
 import net.miginfocom.swing.MigLayout;
@@ -20,8 +22,9 @@ import swing.ScrollBar;
  * @author Acer
  */
 public class Menu_Left extends javax.swing.JPanel {
-
-    private List<User> userAccount;
+    private List<User> otherUser;
+    private List<User> userHaveConversation;
+    private List<User> friendList;
     public Menu_Left() {
         initComponents();
         init();
@@ -30,12 +33,14 @@ public class Menu_Left extends javax.swing.JPanel {
     public void init(){
         sp.setVerticalScrollBar(new ScrollBar());
         menuList.setLayout(new MigLayout("fillx","0[fill]0","0[]1" ));
-        userAccount = new ArrayList<>();
+        userHaveConversation = new ArrayList<>();
+        friendList = new ArrayList<>();
+        otherUser = new ArrayList<>();
         PublicEvent.getInstance().addEventMenuLeft(new EventMenuLeft() {
             @Override
             public void newUser(List<User> users) {
                 for(User user : users){
-                    userAccount.add(user);
+                    userHaveConversation.add(user);
                     menuList.add(new Item_People(user), "wrap");
                     refreshMenuList();
                 }
@@ -43,7 +48,7 @@ public class Menu_Left extends javax.swing.JPanel {
 
             @Override
             public void userConnect(int userID) {
-                for(User u : userAccount){
+                for(User u : userHaveConversation){
                     if(u.getID()==userID){
                         u.setOnline(true);
                         PublicEvent.getInstance().getEventMain().updateUserChat(u);
@@ -59,11 +64,20 @@ public class Menu_Left extends javax.swing.JPanel {
                         }
                     }
                 }
+                if(menuFriend.isSelected()){
+                    for(Component com: menuList.getComponents()){
+                        Item_People item = (Item_People)com;
+                        if(item.getUser().getID()== userID){
+                            item.updateStatus();
+                            break;
+                        }
+                    }
+                }
             }
 
             @Override
             public void userDisconnect(int userID) {
-                for(User u : userAccount){
+                for(User u : userHaveConversation){
                     if(u.getID()==userID){
                         u.setOnline(false);
                         PublicEvent.getInstance().getEventMain().updateUserChat(u);
@@ -79,6 +93,60 @@ public class Menu_Left extends javax.swing.JPanel {
                         }
                     }
                 }
+                if(menuFriend.isSelected()){
+                    for(Component com: menuList.getComponents()){
+                        Item_People item = (Item_People)com;
+                        if(item.getUser().getID()== userID){
+                            item.updateStatus();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void setFriend(List<User> users) {
+                friendList = new ArrayList<>();
+                for(User user : users){
+                    friendList.add(user);
+                }
+            }
+
+            @Override
+            public void setOtherUser(List<User> users) {
+                otherUser = new ArrayList<>();
+                for(User user : users){
+                    otherUser.add(user);
+                }
+            }
+
+            @Override
+            public void newConversation(List<User> users) {
+                for(User user : users){
+                    System.out.println(user.toString());
+                    userHaveConversation.add(user);
+                    if(menuMessage.isSelected()){
+                        menuList.add(new Item_People(user), "wrap");
+                        refreshMenuList();
+                    }
+                }
+            }
+
+            @Override
+            public void updateFriendList(int userID) {
+                Iterator<User> iterator = otherUser.iterator();
+                while (iterator.hasNext()) {
+                    User u = iterator.next();
+                    if (u.getID() == userID) {
+                        iterator.remove();
+                        friendList.add(u);
+                        break;
+                    }
+                }
+                if(menuFriend.isSelected()){
+                    showFriend();
+                }
+                
             }
         });
         showMessage();
@@ -86,24 +154,27 @@ public class Menu_Left extends javax.swing.JPanel {
 
     private void showMessage(){
         menuList.removeAll();
-        for(User user : userAccount){
+        for(User user : userHaveConversation){
             menuList.add(new Item_People(user), "wrap");
         }
         refreshMenuList();
     }
     
     private void showGroup(){
-        menuList.removeAll();
-        for(int i=0; i < 5; i++){
-            menuList.add(new Item_People(null), "wrap");
-        }
-        refreshMenuList();
+        
     }
     
     private void showFriend(){
         menuList.removeAll();
-        for(int i=0; i < 7; i++){
-            menuList.add(new Item_People(null), "wrap");
+        Label friendLabel = new Label("List friends");
+        menuList.add(friendLabel, "wrap");
+        for(User user : friendList){
+            menuList.add(new Item_People(user), "wrap");
+        }
+        Label notFriendLabel = new Label("Other users");
+        menuList.add(notFriendLabel, "wrap");
+        for(User user : otherUser){
+            menuList.add(new Item_People(user), "wrap");
         }
         refreshMenuList();
     }
@@ -226,6 +297,8 @@ public class Menu_Left extends javax.swing.JPanel {
 
     private void menuFriendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuFriendActionPerformed
         if(!menuFriend.isSelected()){
+            Service.getInstance().getClient().emit("list_friend", Service.getInstance().getUser().getID());
+            Service.getInstance().getClient().emit("other_user", Service.getInstance().getUser().getID());
             menuMessage.setSelected(false);
             menuGroup.setSelected(false);
             menuFriend.setSelected(true);

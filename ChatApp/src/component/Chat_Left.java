@@ -38,6 +38,11 @@ public class Chat_Left extends javax.swing.JLayeredPane {
         txt.hideText();
         txt.setEmoji(false, icon);
     }
+    
+    public void setAddFriend(int userID, boolean responded){
+        txt.hideText();
+        txt.setAddFriend(userID, false, responded);
+    }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

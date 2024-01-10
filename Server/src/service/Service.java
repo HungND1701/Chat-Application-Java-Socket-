@@ -7,12 +7,14 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JTextArea;
 import model.Client;
 import model.Conversation;
+import model.Friend;
 import model.Login;
 import model.Message;
 import model.Receive_Message;
@@ -81,10 +83,31 @@ public class Service {
             @Override
             public void onData(SocketIOClient sioc, Integer t, AckRequest ar) throws Exception {
                 try {
-                    System.out.println("server recv userID : "+ t+ "\n");
-                    List<User> list = serviceUser.getUser(t);
+                    List<User> list = serviceUser.getAllUserHaveConversation(t);
                     System.out.println(list.toString());
                     sioc.sendEvent("list_user", list.toArray());
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        });
+        server.addEventListener("list_friend", Integer.class, new DataListener<Integer>() {
+            @Override
+            public void onData(SocketIOClient sioc, Integer t, AckRequest ar) throws Exception {
+                try {
+                    List<User> list = serviceUser.getFriendList(t);
+                    sioc.sendEvent("list_friend", list.toArray());
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        });
+        server.addEventListener("other_user", Integer.class, new DataListener<Integer>() {
+            @Override
+            public void onData(SocketIOClient sioc, Integer t, AckRequest ar) throws Exception {
+                try {
+                    List<User> list = serviceUser.getOtherUser(t);
+                    sioc.sendEvent("other_user", list.toArray());
                 } catch (Exception e) {
                     System.err.println(e);
                 }
@@ -103,13 +126,44 @@ public class Service {
                 }
             }
         });
+        server.addEventListener("add_friend", Friend.class, new DataListener<Friend>() {
+            @Override
+            public void onData(SocketIOClient sioc, Friend t, AckRequest ar) throws Exception {
+                try {
+                    serviceUser.addFriend(t);
+                    // send event success
+                    sioc.sendEvent("accept_friend_success", t.getUser_id_2());
+                    
+                    for(Client c: listClient){
+                        if(c.getUser().getID() == t.getUser_id_2()){
+                            c.getClient().sendEvent("is_accepted_friend", t.getUser_id_1());
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        });
+        server.addEventListener("reject_add_friend", Friend.class, new DataListener<Friend>() {
+            @Override
+            public void onData(SocketIOClient sioc, Friend t, AckRequest ar) throws Exception {
+                try {
+                    serviceUser.rejectAddFriend(t);
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        });
         
         server.addEventListener("send_to_user", Send_Message.class, new DataListener<Send_Message>() {
             @Override
             public void onData(SocketIOClient sioc, Send_Message t, AckRequest ar) throws Exception {
                 try {
-                    serviceUser.addMessage(t);
+                    boolean IsNewConversation = serviceUser.addMessage(t);
                     sendToClient(t);
+                    if(IsNewConversation){
+                        sendToClientFlagNewConversation(t);
+                    }
                 } catch (Exception e) {
                     System.err.println(e);
                 }
@@ -146,6 +200,21 @@ public class Service {
             }
         }
     }
+    private void sendToClientFlagNewConversation(Send_Message data) throws SQLException{
+        for(Client c: listClient){
+            if(c.getUser().getID() == data.getToUserID()){
+                User user = serviceUser.getUserByID(data.getFromUserID());
+                System.out.println(user.toString());
+                c.getClient().sendEvent("new_conversation", user);
+            }
+            if(c.getUser().getID() == data.getFromUserID()){
+                User user = serviceUser.getUserByID(data.getToUserID());
+                System.out.println(user.toString());
+                c.getClient().sendEvent("new_conversation", user);
+            }
+        }
+    }
+    
     public int removeClient(SocketIOClient client){
         for(Client d: listClient){
             if(d.getClient() == client){

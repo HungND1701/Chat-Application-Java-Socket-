@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import model.Client;
 import model.Conversation;
+import model.Friend;
 import model.Login;
 import model.Message;
 import model.Register;
@@ -69,17 +70,21 @@ public class ServiceUser {
                 rs = p.getGeneratedKeys();
                 rs.next();
                 int userID = rs.getInt(1);
+                String avatar = ((userID % 15) +1) + "";
                 rs.close();
                 p.close();
+                p = con.prepareStatement("UPDATE users SET avatar = ? WHERE id = ?");
+                p.setString(1, avatar);
+                p.setInt(2, userID);
+                p.executeUpdate();
                 System.out.println("4");
                 con.commit();
                 con.setAutoCommit(true);
-                
                 message.setAction(true);
                 message.setMessage("Ok");
                 user.setID(userID);
                 user.setOnline(true);
-                user.setAvatar("");
+                user.setAvatar(avatar);
                 System.out.println(user.toString());
                 message.setData(user);
             }
@@ -113,6 +118,63 @@ public class ServiceUser {
         p.close();
         return list;
     }
+    public User getUserByID(int exitUser) throws SQLException {
+        User user = new User();
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE id = ?");
+        p.setInt(1, exitUser);
+        ResultSet rs = p.executeQuery();
+        if(rs.next()){
+            int id = rs.getInt(1);
+            user = new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id));
+        }
+        rs.close();
+        p.close();
+        return user;
+    }
+    public List<User> getAllUserHaveConversation(int userID) throws SQLException{
+        List<User> list = new ArrayList<>();
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE id IN (SELECT user_id FROM user_conversation WHERE user_id <> ? AND conversation_id IN(SELECT conversations.id FROM user_conversation JOIN conversations ON user_conversation.conversation_id = conversations.id WHERE is_group = 0 AND user_id = ?))");
+        p.setInt(1, userID);
+        p.setInt(2, userID);
+        ResultSet rs = p.executeQuery();
+        while(rs.next()){
+            int id = rs.getInt(1);
+            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id)));
+        }
+        rs.close();
+        p.close();
+        return list;
+    }
+    
+    public List<User> getFriendList(int exitUser) throws SQLException {
+        List<User> list = new ArrayList<>();
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE id IN (SELECT IF(friend.user_id_1 = ?, friend.user_id_2, friend.user_id_1) AS id FROM friend WHERE ? IN (friend.user_id_1, friend.user_id_2)) ");
+        p.setInt(1, exitUser);
+        p.setInt(2, exitUser);
+        ResultSet rs = p.executeQuery();
+        while(rs.next()){
+            int id = rs.getInt(1);
+            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id)));
+        }
+        rs.close();
+        p.close();
+        return list;
+    }
+    public List<User> getOtherUser(int exitUser) throws SQLException {
+        List<User> list = new ArrayList<>();
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE id <> ? AND id NOT IN (SELECT id FROM users WHERE id IN (SELECT IF(friend.user_id_1 = ?, friend.user_id_2, friend.user_id_1) AS id FROM friend WHERE ? IN (friend.user_id_1, friend.user_id_2))) ");
+        p.setInt(1, exitUser);
+        p.setInt(2, exitUser);
+        p.setInt(3, exitUser);
+        ResultSet rs = p.executeQuery();
+        while(rs.next()){
+            int id = rs.getInt(1);
+            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id)));
+        }
+        rs.close();
+        p.close();
+        return list;
+    }
     
     public boolean checkUserStatus(int id){
         List<Client> clients = Service.getInstance(null).getListClient();
@@ -123,7 +185,27 @@ public class ServiceUser {
         }
         return false;
     }
-    public void addMessage(Send_Message data) {
+    public void addFriend(Friend friend) throws SQLException{
+        PreparedStatement p = con.prepareStatement("INSERT INTO friend(user_id_1, user_id_2) VALUES (?,?)");
+        p.setInt(1, friend.getUser_id_1());
+        p.setInt(2, friend.getUser_id_2());
+        p.executeUpdate();
+        p.close();
+        p = con.prepareStatement("UPDATE messages SET type = ? WHERE sender_id = ? AND receiver_id = ? AND type = 4");
+        p.setInt(1, 5);
+        p.setInt(2, friend.getUser_id_2());
+        p.setInt(3, friend.getUser_id_1());
+        p.executeUpdate();
+    }
+    public void rejectAddFriend(Friend friend) throws SQLException{
+        PreparedStatement p = con.prepareStatement("UPDATE messages SET type = ? WHERE sender_id = ? AND receiver_id = ? AND type = 4");
+        p.setInt(1, 5);
+        p.setInt(2, friend.getUser_id_2());
+        p.setInt(3, friend.getUser_id_1());
+        p.executeUpdate();
+    }
+    
+    public boolean addMessage(Send_Message data) {
         System.out.println("1");
         try {
             System.out.println("2");
@@ -160,6 +242,7 @@ public class ServiceUser {
                 p.executeUpdate();
                 System.out.println("6");
                 p.close();
+                return false;
             }else{
                 rs.close();
                 p.close();
@@ -196,6 +279,7 @@ public class ServiceUser {
                 p.close();
                 con.commit();
                 con.setAutoCommit(true);
+                return true;
             }
     
         } catch (SQLException e) {
@@ -210,6 +294,7 @@ public class ServiceUser {
                 
             }
         }
+        return false;
     }
     
     public List<Send_Message> getMessagesConversation(Conversation data){
@@ -278,30 +363,6 @@ public class ServiceUser {
         return null;
     }
     
-    public User getUserByID(int ID) {
-        try {
-            PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM users\n"
-                    + "WHERE id=?");
-            preparedStatement.setInt(1, ID);
-            System.out.println(preparedStatement);
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-                return new User(rs.getInt(1),
-                        rs.getString(2),
-                        rs.getString(3),
-                        rs.getString(4),
-                        rs.getString(5),
-                        (rs.getInt(6) != 0));
-
-            }
-
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public void addUser(User user) {
         try {
             PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO users(username, password, nickname, avatar)\n"

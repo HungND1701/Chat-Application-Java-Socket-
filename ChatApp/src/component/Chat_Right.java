@@ -41,6 +41,10 @@ public class Chat_Right extends javax.swing.JLayeredPane {
     public void setFile(String fileName, String fileSize){
         txt.setFile(fileName, fileSize);
     }
+    public void setAddFriend(int userID, boolean responded){
+        txt.hideText();
+        txt.setAddFriend(userID, true, responded);
+    }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

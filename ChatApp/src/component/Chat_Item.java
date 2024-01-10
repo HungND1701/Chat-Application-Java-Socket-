@@ -75,6 +75,14 @@ public class Chat_Item extends javax.swing.JLayeredPane {
         layer.add(chatFile);
         add(layer);
     }
+    public void setAddFriend(int userID, boolean isRight, boolean responded){
+        JLayeredPane layer = new JLayeredPane();
+        layer.setLayout(new FlowLayout(FlowLayout.LEFT));
+        layer.setBorder(new EmptyBorder(0, 5, 0, 5));
+        Chat_Add_Friend chat_Add_Friend = new Chat_Add_Friend(userID, isRight, responded);
+        layer.add(chat_Add_Friend);
+        add(layer);
+    }
     
     public void setTime(String time){
         JLayeredPane layer = new JLayeredPane();
