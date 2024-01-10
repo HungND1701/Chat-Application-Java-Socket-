@@ -7,6 +7,7 @@ import event.PublicEvent;
 import io.socket.emitter.Emitter;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.util.ArrayList;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -51,15 +52,16 @@ public class Main extends javax.swing.JFrame {
             public void initChat() {
                 home.setVisible(true);
                 login.setVisible(false);
-                System.out.println("client send userID : "+ Service.getInstance().getUser().getID());
-                
+                System.out.println("client send userID : "+ Service.getInstance().getUser().getID()); 
                 Service.getInstance().getClient().emit("list_user", Service.getInstance().getUser().getID());
+                Service.getInstance().getClient().emit("list_friend", Service.getInstance().getUser().getID());
+                Service.getInstance().getClient().emit("other_user", Service.getInstance().getUser().getID());
             }
 
             @Override
             public void selectUserChat(User user) {
                 home.setUserChat(user);
-                System.out.println("Convertion from user : "+ Service.getInstance().getUser().getID() +"to User: "+ user.getID());
+                PublicEvent.getInstance().getEventMenuRight().newUser(user, new ArrayList<>());
                 Conversation conversation = new Conversation(Service.getInstance().getUser().getID(), user.getID());
                 Service.getInstance().getClient().emit("list_message", conversation.toJSONObject());
             }

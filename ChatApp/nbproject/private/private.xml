@@ -3,13 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/form/Chat.java</file>
-            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/component/Panel_More.java</file>
-            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/component/Chat_Bottom.java</file>
-            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/emoji/Emoji.java</file>
-            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/component/MenuButton.java</file>
-            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/emoji/Model_Emoji.java</file>
-            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/component/OptionButton.java</file>
+            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/event/EventMenuRight.java</file>
+            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/form/Menu_Right.java</file>
+            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/service/Service.java</file>
+            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/component/Chat_Add_Friend.java</file>
+            <file>file:/C:/Users/Acer/Documents/workspace/Lap%20Trinh%20Mang/ChatApp/src/form/Menu_Left.java</file>
         </group>
     </open-files>
 </project-private>

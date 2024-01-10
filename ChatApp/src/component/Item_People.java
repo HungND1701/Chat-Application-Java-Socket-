@@ -8,6 +8,7 @@ import event.PublicEvent;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.ImageIcon;
 import model.User;
 
 /**
@@ -18,6 +19,8 @@ public class Item_People extends javax.swing.JPanel {
 
     private final User user;
     private boolean mouseOver;
+
+    
     public User getUser() {
         return user;
     }
@@ -26,10 +29,12 @@ public class Item_People extends javax.swing.JPanel {
     public Item_People(User user) {
         this.user = user;
         initComponents();
+        avatar.setImage(new ImageIcon(getClass().getResource("/avatar/"+user.getAvatar()+".png")));
         username.setText(user.getUsername());
         activeStatus.setActive(user.isOnline());
         init();
     }
+    
     
     public void updateStatus(){
         activeStatus.setActive(user.isOnline());
@@ -51,6 +56,7 @@ public class Item_People extends javax.swing.JPanel {
             @Override
             public void mouseReleased(MouseEvent e) {
                if(mouseOver){
+                   setBackground(new Color(230,230,230));
                    PublicEvent.getInstance().getEventMain().selectUserChat(user);
                }
             }
@@ -68,7 +74,7 @@ public class Item_People extends javax.swing.JPanel {
     private void initComponents() {
 
         username = new javax.swing.JLabel();
-        imageAvatar2 = new swing.ImageAvatar();
+        avatar = new swing.ImageAvatar();
         lbStatus = new javax.swing.JLabel();
         activeStatus = new swing.ActiveStatus();
 
@@ -77,8 +83,8 @@ public class Item_People extends javax.swing.JPanel {
         username.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         username.setText("Name");
 
-        imageAvatar2.setBorderSize(1);
-        imageAvatar2.setImage(new javax.swing.ImageIcon(getClass().getResource("/icon/profile.png"))); // NOI18N
+        avatar.setBorderSize(1);
+        avatar.setImage(new javax.swing.ImageIcon(getClass().getResource("/icon/profile.png"))); // NOI18N
 
         lbStatus.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
         lbStatus.setForeground(new java.awt.Color(105, 105, 105));
@@ -93,7 +99,7 @@ public class Item_People extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(imageAvatar2, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(avatar, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(username, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -108,7 +114,7 @@ public class Item_People extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(3, 3, 3)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(imageAvatar2, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(avatar, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(username)
                         .addGap(7, 7, 7)
@@ -122,7 +128,7 @@ public class Item_People extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private swing.ActiveStatus activeStatus;
-    private swing.ImageAvatar imageAvatar2;
+    private swing.ImageAvatar avatar;
     private javax.swing.JLabel lbStatus;
     private javax.swing.JLabel username;
     // End of variables declaration//GEN-END:variables

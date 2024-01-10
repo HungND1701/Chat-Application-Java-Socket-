@@ -123,4 +123,35 @@ public class User {
             System.err.println(e);
         }
     }
+    public User(JSONObject obj) {
+        try {
+            if(obj.has("id")){
+                ID = obj.getInt("id"); 
+            }
+            if(obj.has("username")){
+                username = obj.getString("username");
+            }
+            if(obj.has("password")){
+                password = obj.getString("password");
+            }
+            if(obj.has("nickname")){
+                nickname = obj.getString("nickname");
+            }
+            if(obj.has("avatar")){
+                avatar = obj.getString("avatar");
+            }
+            if(obj.has("online")){
+                isOnline = obj.getBoolean("online");
+            } 
+        } catch (JSONException e) {
+            System.err.println(e);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "User{" + "ID=" + ID + ", username=" + username + ", password=" + password + ", nickname=" + nickname + ", avatar=" + avatar + ", isOnline=" + isOnline + '}';
+    }
+    
+    
 }

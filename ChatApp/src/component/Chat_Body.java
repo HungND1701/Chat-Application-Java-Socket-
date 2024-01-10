@@ -17,7 +17,12 @@ import service.Service;
 import swing.ScrollBar;
 
 public class Chat_Body extends javax.swing.JPanel {
+    private User user;
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+    
     public Chat_Body() {
         initComponents();
         init();
@@ -40,6 +45,16 @@ public class Chat_Body extends javax.swing.JPanel {
             item.setEmoji(Emoji.getInstance().getEmoji(Integer.valueOf(data.getText())).getIcon());
             item.setTime(data.getTime());
             body.add(item, "wrap, w 100::80%");
+        }else if(data.getMessageType()== MessageType.ADDFRIEND){
+            Chat_Left item = new Chat_Left();
+            item.setAddFriend(user.getID(), false);
+            item.setTime(data.getTime());
+            body.add(item, "wrap, w 100::80%");
+        }else if(data.getMessageType()== MessageType.ADDFRIENDED){
+            Chat_Left item = new Chat_Left();
+            item.setAddFriend(user.getID(), true);
+            item.setTime(data.getTime());
+            body.add(item, "wrap, w 100::80%");
         }else{
             //send file
         }
@@ -57,6 +72,16 @@ public class Chat_Body extends javax.swing.JPanel {
         }else if(data.getMessageType()== MessageType.EMOJI){
             Chat_Right item = new Chat_Right();
             item.setEmoji(Emoji.getInstance().getEmoji(Integer.valueOf(data.getText())).getIcon());
+            item.setTime(data.getTime());
+            body.add(item, "wrap, al right, w 100::80%");
+        }else if(data.getMessageType()== MessageType.ADDFRIEND){
+            Chat_Right item = new Chat_Right();
+            item.setAddFriend(user.getID(), false);
+            item.setTime(data.getTime());
+            body.add(item, "wrap, al right, w 100::80%");
+        }else if(data.getMessageType()== MessageType.ADDFRIENDED){
+            Chat_Right item = new Chat_Right();
+            item.setAddFriend(user.getID(), true);
             item.setTime(data.getTime());
             body.add(item, "wrap, al right, w 100::80%");
         }else{

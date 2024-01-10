@@ -8,6 +8,7 @@ public class PublicEvent {
     private EventLogin eventLogin;
     private EventMain eventMain;
     private EventMenuLeft eventMenuLeft;
+    private EventMenuRight eventMenuRight;
     
     private PublicEvent(){
         
@@ -58,6 +59,14 @@ public class PublicEvent {
 
     public void addEventMenuLeft(EventMenuLeft eventMenuLeft) {
         this.eventMenuLeft = eventMenuLeft;
+    }
+    
+    public EventMenuRight getEventMenuRight() {
+        return eventMenuRight;
+    }
+
+    public void addEventMenuRight(EventMenuRight eventMenuRight) {
+        this.eventMenuRight = eventMenuRight;
     }
     
     

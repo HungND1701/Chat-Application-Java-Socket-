@@ -59,17 +59,19 @@ public class Chat extends javax.swing.JPanel {
 
             @Override
             public void receiveMessage(Receive_Message data) {
-                if(chatTitle.getUser().getID() == data.getFromUserID()){
-                    String time = data.getTime();
-                    int spaceIndex = time.indexOf(" ");
-                    String datePart = time.substring(0, spaceIndex);
-                    String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
-                    if(!datePart.equals(lastDate)){
-                        lastDate = datePart;
-                        chatBody.addDate("Today");
-                    }
-                    data.setTime(timePart);
-                    chatBody.addItemLeft(data);
+                if(chatTitle.getUser()!=null){
+                    if(chatTitle.getUser().getID() == data.getFromUserID()){
+                        String time = data.getTime();
+                        int spaceIndex = time.indexOf(" ");
+                        String datePart = time.substring(0, spaceIndex);
+                        String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
+                        if(!datePart.equals(lastDate)){
+                            lastDate = datePart;
+                            chatBody.addDate("Today");
+                        }
+                        data.setTime(timePart);
+                        chatBody.addItemLeft(data);
+                    } 
                 }
             }
 
@@ -129,6 +131,7 @@ public class Chat extends javax.swing.JPanel {
     }
     public void setUserChat(User user){
         chatTitle.setUserName(user);
+        chatBody.setUser(user);
         chatBottom.setUser(user);
         chatBody.clearChat();
     }

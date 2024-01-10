@@ -74,6 +74,17 @@ public class Send_Message {
             System.err.println(e);
         }
     }
+    public Send_Message(JSONObject obj) {
+        try {
+            fromUserID = obj.getInt("fromUserID");
+            toUserID = obj.getInt("toUserID");
+            text = obj.getString("text");
+            time = obj.getString("time");
+            messageType = MessageType.toMessageType(obj.getInt("messageType"));
+        } catch (JSONException e) {
+            System.err.println(e);
+        }
+    }
     
     public JSONObject toJSONObject(){
         try {
