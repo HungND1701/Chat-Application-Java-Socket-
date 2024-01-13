@@ -4,6 +4,7 @@
  */
 package form;
 
+import component.Item_Group;
 import component.Item_People;
 import event.EventMenuLeft;
 import event.PublicEvent;
@@ -12,6 +13,7 @@ import java.awt.Label;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import model.Group;
 import model.User;
 import net.miginfocom.swing.MigLayout;
 import service.Service;
@@ -25,6 +27,7 @@ public class Menu_Left extends javax.swing.JPanel {
     private List<User> otherUser;
     private List<User> userHaveConversation;
     private List<User> friendList;
+    private List<Group> groupList;
     public Menu_Left() {
         initComponents();
         init();
@@ -47,9 +50,27 @@ public class Menu_Left extends javax.swing.JPanel {
             }
 
             @Override
-            public void userConnect(int userID) {
+            public void userConnect(User u1) {
+                int userID = u1.getID();
                 for(User u : userHaveConversation){
                     if(u.getID()==userID){
+                        u.setLast_online(u1.getLast_online());
+                        u.setOnline(true);
+                        PublicEvent.getInstance().getEventMain().updateUserChat(u);
+                        break;
+                    }
+                }
+                for(User u : friendList){
+                    if(u.getID()==userID){
+                        u.setLast_online(u1.getLast_online());
+                        u.setOnline(true);
+                        PublicEvent.getInstance().getEventMain().updateUserChat(u);
+                        break;
+                    }
+                }
+                for(User u : otherUser){
+                    if(u.getID()==userID){
+                        u.setLast_online(u1.getLast_online());
                         u.setOnline(true);
                         PublicEvent.getInstance().getEventMain().updateUserChat(u);
                         break;
@@ -59,26 +80,45 @@ public class Menu_Left extends javax.swing.JPanel {
                     for(Component com: menuList.getComponents()){
                         Item_People item = (Item_People)com;
                         if(item.getUser().getID()== userID){
-                            item.updateStatus();
+                            item.updateStatus(true);
                             break;
                         }
                     }
                 }
                 if(menuFriend.isSelected()){
                     for(Component com: menuList.getComponents()){
-                        Item_People item = (Item_People)com;
-                        if(item.getUser().getID()== userID){
-                            item.updateStatus();
-                            break;
-                        }
+                        if(com instanceof  Item_People item){
+                            if(item.getUser().getID()== userID){
+                                item.updateStatus(true);
+                                break;
+                            }
+                        }                       
                     }
                 }
             }
 
             @Override
-            public void userDisconnect(int userID) {
+            public void userDisconnect(User u1) {
+                int userID = u1.getID();
                 for(User u : userHaveConversation){
                     if(u.getID()==userID){
+                        u.setLast_online(u1.getLast_online());
+                        u.setOnline(false);
+                        PublicEvent.getInstance().getEventMain().updateUserChat(u);
+                        break;
+                    }
+                }
+                for(User u : friendList){
+                    if(u.getID()==userID){
+                        u.setLast_online(u1.getLast_online());
+                        u.setOnline(false);
+                        PublicEvent.getInstance().getEventMain().updateUserChat(u);
+                        break;
+                    }
+                }
+                for(User u : otherUser){
+                    if(u.getID()==userID){
+                        u.setLast_online(u1.getLast_online());
                         u.setOnline(false);
                         PublicEvent.getInstance().getEventMain().updateUserChat(u);
                         break;
@@ -88,17 +128,18 @@ public class Menu_Left extends javax.swing.JPanel {
                     for(Component com: menuList.getComponents()){
                         Item_People item = (Item_People)com;
                         if(item.getUser().getID()== userID){
-                            item.updateStatus();
+                            item.updateStatus(false);
                             break;
                         }
                     }
                 }
                 if(menuFriend.isSelected()){
                     for(Component com: menuList.getComponents()){
-                        Item_People item = (Item_People)com;
-                        if(item.getUser().getID()== userID){
-                            item.updateStatus();
-                            break;
+                        if(com instanceof  Item_People item){
+                            if(item.getUser().getID()== userID){
+                                item.updateStatus(false);
+                                break;
+                            }
                         }
                     }
                 }
@@ -164,6 +205,15 @@ public class Menu_Left extends javax.swing.JPanel {
                     showFriend();
                 }
             }
+
+            @Override
+            public void setGroup(List<Group> groups) {
+                groupList = new ArrayList<>();
+                for(Group gr : groups){
+                    groupList.add(gr);
+                }
+            }
+            
         });
         showMessage();
     }
@@ -177,7 +227,11 @@ public class Menu_Left extends javax.swing.JPanel {
     }
     
     private void showGroup(){
-        
+        menuList.removeAll();
+        for(Group group : groupList){
+            menuList.add(new Item_Group(group), "wrap");
+        }
+        refreshMenuList();
     }
     
     private void showFriend(){
@@ -313,8 +367,6 @@ public class Menu_Left extends javax.swing.JPanel {
 
     private void menuFriendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuFriendActionPerformed
         if(!menuFriend.isSelected()){
-            Service.getInstance().getClient().emit("list_friend", Service.getInstance().getUser().getID());
-            Service.getInstance().getClient().emit("other_user", Service.getInstance().getUser().getID());
             menuMessage.setSelected(false);
             menuGroup.setSelected(false);
             menuFriend.setSelected(true);

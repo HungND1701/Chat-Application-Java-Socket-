@@ -12,6 +12,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -21,7 +23,9 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import main.Main;
+import model.Group;
 import model.Send_Message;
+import model.Send_Message_Group;
 import model.User;
 import net.miginfocom.swing.MigLayout;
 import service.Service;
@@ -29,12 +33,23 @@ import swing.ScrollBar;
 
 public class Panel_More extends javax.swing.JPanel {
     private User user;
+    private Group group;
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.user = null;
+        this.group = group;
+    }
 
     public User getUser() {
         return user;
     }
 
     public void setUser(User user) {
+        this.group = null;
         this.user = user;
     }
 
@@ -104,9 +119,20 @@ public class Panel_More extends javax.swing.JPanel {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Send_Message message = new Send_Message(Service.getInstance().getUser().getID(), user.getID(), emoji.getId()+"", getTimeNow(), MessageType.EMOJI);
-                sendMessage(message);
-                PublicEvent.getInstance().getEventChat().sendMessage(message);
+                if(user!=null){
+                    Send_Message message = new Send_Message(Service.getInstance().getUser().getID(), user.getID(), emoji.getId()+"", getTimeNow(), MessageType.EMOJI);
+                    sendMessage(message);
+                    PublicEvent.getInstance().getEventChat().sendMessage(message);
+                }else{
+                    List<Integer> userIdList = new ArrayList<>();
+                    for(User u: group.getListUser()){
+                        userIdList.add(u.getID());
+                    }
+                    Send_Message_Group message = new Send_Message_Group(group.getId(), Service.getInstance().getUser().getID(), userIdList, emoji.getId()+"", getTimeNow(), MessageType.EMOJI);
+                    Service.getInstance().getClient().emit("send_to_group", message.toJSONObject());
+                    PublicEvent.getInstance().getEventChat().sendMessageGroup(message);
+                }
+                
             }
             
         });

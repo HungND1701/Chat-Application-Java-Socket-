@@ -6,23 +6,27 @@ import java.awt.Adjustable;
 import java.awt.Color;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JScrollBar;
+import model.Group;
 import model.Receive_Message;
 import model.Send_Message;
 import model.User;
 import net.miginfocom.swing.MigLayout;
-import service.Service;
 import swing.ScrollBar;
 
 public class Chat_Body extends javax.swing.JPanel {
     private User user;
+    private Group group;
 
     public void setUser(User user) {
         this.user = user;
     }
-    
+
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+
     public Chat_Body() {
         initComponents();
         init();
@@ -93,15 +97,36 @@ public class Chat_Body extends javax.swing.JPanel {
         scrollToBottom();
     } 
     
-    public void addItemLeft(String text, String user, String[] image){
-        Chat_Left_With_Profile item = new Chat_Left_With_Profile();
-        item.setText(text);
-        item.setImage(image);
-        item.setTime();
-        item.setUserProfile(user);
-        body.add(item, "wrap, w 100::80%");
-        body.repaint();
-        body.revalidate();
+    public void addItemLeft(Receive_Message data, Boolean isGroup){
+        if(isGroup){
+            User u= new User();
+            for(User u1 : group.getListUser()){
+                if(u1.getID()==data.getFromUserID()){
+                    u= u1;
+                    break;
+                }
+            }
+            if(data.getMessageType()== MessageType.TEXT){
+                Chat_Left_With_Profile item = new Chat_Left_With_Profile();
+                item.setUserProfile(u.getUsername());
+                item.setImageProfile(new ImageIcon(getClass().getResource("/avatar/"+u.getAvatar()+".png")));
+                item.setText(data.getText());
+                item.setTime(data.getTime());
+                body.add(item, "wrap, w 100::80%");
+            }else if(data.getMessageType()== MessageType.EMOJI){
+                Chat_Left_With_Profile item = new Chat_Left_With_Profile();
+                item.setUserProfile(u.getUsername());
+                item.setImageProfile(new ImageIcon(getClass().getResource("/avatar/"+u.getAvatar()+".png")));
+                item.setEmoji(Emoji.getInstance().getEmoji(Integer.valueOf(data.getText())).getIcon());
+                item.setTime(data.getTime());
+                body.add(item, "wrap, w 100::80%");
+            }else{
+                //send file
+            }
+            repaint();
+            revalidate();
+            scrollToBottom();
+        }
     }  
     
     public void addItemRight(String text, String[] image){
@@ -116,16 +141,15 @@ public class Chat_Body extends javax.swing.JPanel {
         scrollToBottom();
     } 
     
-    public void addItemFileLeft(String text, String user, String fileName, String fileSize){
-        Chat_Left_With_Profile item = new Chat_Left_With_Profile();
-        item.setText(text);
-        item.setFile(fileName, fileSize);
-        item.setTime();
-        item.setUserProfile(user);
-        body.add(item, "wrap, w 100::80%");
-        body.repaint();
-        body.revalidate();
-    } 
+//    public void addItemFileLeft(String text, String user, String fileName, String fileSize){
+//        Chat_Left_With_Profile item = new Chat_Left_With_Profile();
+//        item.setText(text);
+//        item.setFile(fileName, fileSize);
+//        item.setUserProfile(user);
+//        body.add(item, "wrap, w 100::80%");
+//        body.repaint();
+//        body.revalidate();
+//    } 
     
     public void addItemFileRight(String text, String fileName, String fileSize){
         Chat_Right item = new Chat_Right();

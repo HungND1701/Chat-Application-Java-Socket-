@@ -36,7 +36,8 @@ public class Item_People extends javax.swing.JPanel {
     }
     
     
-    public void updateStatus(){
+    public void updateStatus(boolean isOnline){
+        user.setIsOnline(isOnline);
         activeStatus.setActive(user.isOnline());
     }
     private void init(){

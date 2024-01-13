@@ -11,15 +11,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTextArea;
 import model.Client;
 import model.Conversation;
 import model.Friend;
+import model.Group;
 import model.Login;
 import model.Message;
 import model.Receive_Message;
 import model.Register;
 import model.Send_Message;
+import model.Send_Message_Group;
 import model.User;
 
 public class Service {
@@ -113,6 +117,17 @@ public class Service {
                 }
             }
         });
+        server.addEventListener("list_group", Integer.class, new DataListener<Integer>() {
+            @Override
+            public void onData(SocketIOClient sioc, Integer t, AckRequest ar) throws Exception {
+                try {
+                    List<Group> group = serviceUser.getGroupList(t);
+                    sioc.sendEvent("list_group", group.toArray());
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        });
         server.addEventListener("list_message", Conversation.class, new DataListener<Conversation>() {
             @Override
             public void onData(SocketIOClient sioc, Conversation t, AckRequest ar) throws Exception {
@@ -121,6 +136,17 @@ public class Service {
                     List<Send_Message> list = serviceUser.getMessagesConversation(t);
                     System.out.println(Arrays.toString(list.toArray()));
                     sioc.sendEvent("list_message", list.toArray());
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        });
+        server.addEventListener("list_group_message", Group.class, new DataListener<Group>() {
+            @Override
+            public void onData(SocketIOClient sioc, Group t, AckRequest ar) throws Exception {
+                try {
+                    List<Send_Message_Group> list = serviceUser.getMessagesConversationGroup(t.getId());
+                    sioc.sendEvent("list_group_message", list.toArray());
                 } catch (Exception e) {
                     System.err.println(e);
                 }
@@ -189,12 +215,28 @@ public class Service {
             }
         });
         
+        server.addEventListener("send_to_group", Send_Message_Group.class, new DataListener<Send_Message_Group>() {
+            @Override
+            public void onData(SocketIOClient sioc, Send_Message_Group t, AckRequest ar) throws Exception {
+                try {
+                    serviceUser.addMessageToGroup(t);
+                    sendToGroupClient(t);
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+        });
+        
         server.addDisconnectListener(new DisconnectListener(){
             @Override
             public void onDisconnect(SocketIOClient sioc) {
                 int UserID = removeClient(sioc);
                 if(UserID!=0){
-                    userDisconect(UserID);
+                    try {
+                        userDisconect(UserID);
+                    } catch (SQLException ex) {
+                        Logger.getLogger(Service.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
             
@@ -202,11 +244,14 @@ public class Service {
         server.start();
         textArea.append("\nServer has Start on port : " + PORT_NUMBER + "\n");
     }
-    private void userConnect(int userID){
-        server.getBroadcastOperations().sendEvent("user_status", userID, true);
+    private void userConnect(int userID) throws SQLException{
+        User u = serviceUser.getUserByID(userID);
+        server.getBroadcastOperations().sendEvent("user_status", u, true);
     }
-    private void userDisconect(int userID){
-        server.getBroadcastOperations().sendEvent("user_status", userID, false);
+    private void userDisconect(int userID) throws SQLException{
+        serviceUser.updateLastOnline(userID);
+        User u = serviceUser.getUserByID(userID);
+        server.getBroadcastOperations().sendEvent("user_status", u, false);
     }
     private void addClient(SocketIOClient client, User user){
         listClient.add(new Client(client, user));
@@ -216,6 +261,16 @@ public class Service {
             if(c.getUser().getID() == data.getToUserID()){
                 c.getClient().sendEvent("receive_message", new Receive_Message(data.getFromUserID(), data.getText(), data.getTime(), data.getMessageType()));
                 break;
+            }
+        }
+    }
+    private void sendToGroupClient(Send_Message_Group data){
+        for(Client c: listClient){
+            for(int userId : data.getUserIdList()){
+                if(userId!= data.getUserID() && c.getUser().getID() == userId){
+                    System.out.println("Send to "+ userId);
+                    c.getClient().sendEvent("receive_message_group", new Receive_Message(data.getUserID(), data.getText(), data.getTime(), data.getMessageType()), data.getConversation_id());
+                }
             }
         }
     }

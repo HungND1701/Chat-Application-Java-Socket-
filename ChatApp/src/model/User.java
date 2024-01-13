@@ -10,8 +10,34 @@ public class User {
     private String nickname;
     private String avatar;
     private boolean isOnline;
+    private String last_online;
 
+    public JSONObject toJSONObject(){
+        try {
+            JSONObject json = new JSONObject();
+            json.put("ID", ID);
+            json.put("username", username);
+            json.put("password", password);
+            json.put("nickname", nickname);
+            json.put("avatar", avatar);
+            json.put("isOnline", isOnline);
+            json.put("last_online", last_online);
+            return json;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
     public User() {
+    }
+
+    public User(int ID, String username, String password, String nickname, String avatar, boolean isOnline, String last_online) {
+        this.ID = ID;
+        this.username = username;
+        this.password = password;
+        this.nickname = nickname;
+        this.avatar = avatar;
+        this.isOnline = isOnline;
+        this.last_online = last_online;
     }
 
     public User(int ID, String username, String password, String nickname, String avatar, boolean isOnline) {
@@ -22,7 +48,7 @@ public class User {
         this.avatar = avatar;
         this.isOnline = isOnline;
     }
-
+    
     public User(int ID, String nickname, boolean isOnline) {
         this.ID = ID;
         this.nickname = nickname;
@@ -52,8 +78,24 @@ public class User {
         this.password = password;
         this.nickname = nickname;
     }
-    
 
+    public boolean isIsOnline() {
+        return isOnline;
+    }
+
+    public void setIsOnline(boolean isOnline) {
+        this.isOnline = isOnline;
+    }
+
+    public String getLast_online() {
+        return last_online;
+    }
+
+    public void setLast_online(String last_online) {
+        this.last_online = last_online;
+    }
+    
+    
     public int getID() {
         return ID;
     }
@@ -119,6 +161,9 @@ public class User {
             if(obj.has("online")){
                 isOnline = obj.getBoolean("online");
             } 
+            if(obj.has("last_online")){
+                last_online = obj.getString("last_online");
+            }
         } catch (JSONException e) {
             System.err.println(e);
         }
@@ -142,7 +187,10 @@ public class User {
             }
             if(obj.has("online")){
                 isOnline = obj.getBoolean("online");
-            } 
+            }
+            if(obj.has("last_online")){
+                last_online = obj.getString("last_online");
+            }
         } catch (JSONException e) {
             System.err.println(e);
         }
@@ -150,8 +198,9 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" + "ID=" + ID + ", username=" + username + ", password=" + password + ", nickname=" + nickname + ", avatar=" + avatar + ", isOnline=" + isOnline + '}';
+        return "User{" + "ID=" + ID + ", username=" + username + ", password=" + password + ", nickname=" + nickname + ", avatar=" + avatar + ", isOnline=" + isOnline + ", last_online=" + last_online + '}';
     }
+ 
     
     
 }

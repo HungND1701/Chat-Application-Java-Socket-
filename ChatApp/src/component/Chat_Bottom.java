@@ -11,12 +11,16 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
+import model.Group;
 import model.Send_Message;
+import model.Send_Message_Group;
 import model.User;
 import net.miginfocom.swing.MigLayout;
 import service.Service;
@@ -26,12 +30,25 @@ import swing.ScrollBar;
 public class Chat_Bottom extends javax.swing.JPanel {
     
     private User user;
+    private Group group;
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.user = null;
+        this.group = group;
+        panelMore.setGroup(group);
+    }
+    
 
     public User getUser() {
         return user;
     }
 
     public void setUser(User user) {
+        this.group = null;
         this.user = user;
         panelMore.setUser(user);
     }
@@ -124,12 +141,25 @@ public class Chat_Bottom extends javax.swing.JPanel {
     private void eventSend(JIMSendTextPane txt){
         String text = txt.getText().trim();
         if(!text.equals("")) {
-            Send_Message message = new Send_Message(Service.getInstance().getUser().getID(), user.getID(), text, getTimeNow(), MessageType.TEXT);
-            send(message);
-            PublicEvent.getInstance().getEventChat().sendMessage(message);
-            txt.setText("");
-            txt.grabFocus();
-            refresh();
+            if(user!=null){
+                Send_Message message = new Send_Message(Service.getInstance().getUser().getID(), user.getID(), text, getTimeNow(), MessageType.TEXT);
+                send(message);
+                PublicEvent.getInstance().getEventChat().sendMessage(message);
+                txt.setText("");
+                txt.grabFocus();
+                refresh();
+            }else{
+                List<Integer> userIdList = new ArrayList<>();
+                for(User u: group.getListUser()){
+                    userIdList.add(u.getID());
+                }
+                Send_Message_Group message = new Send_Message_Group(group.getId(), Service.getInstance().getUser().getID(), userIdList, text, getTimeNow(), MessageType.TEXT);
+                Service.getInstance().getClient().emit("send_to_group", message.toJSONObject());
+                PublicEvent.getInstance().getEventChat().sendMessageGroup(message);
+                txt.setText("");
+                txt.grabFocus();
+                refresh();
+            }  
         }else{
             txt.grabFocus();
         }

@@ -1,5 +1,6 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -7,8 +8,25 @@ import org.json.JSONObject;
 
 public class Group {
     private int id;
+    private String name;
     private List<User> listUser;
-    private List<Send_Message> listMessage;
+    private boolean isOnline;
+
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public void setIsOnline(boolean isOnline) {
+        this.isOnline = isOnline;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public int getId() {
         return id;
@@ -26,43 +44,55 @@ public class Group {
         this.listUser = listUser;
     }
 
-    public List<Send_Message> getListMessage() {
-        return listMessage;
-    }
-
-    public void setListMessage(List<Send_Message> listMessage) {
-        this.listMessage = listMessage;
-    }
-
-
     public Group() {
     }
 
-    public Group(int id, List<User> listUser, List<Send_Message> listMessage) {
+    public Group(int id, String name, List<User> listUser, boolean isOnline) {
         this.id = id;
+        this.name = name;
         this.listUser = listUser;
-        this.listMessage = listMessage;
+        this.isOnline = isOnline;
     }
     
     public Group(Object json) {
         JSONObject obj = (JSONObject)json;
+        listUser = new ArrayList<>();
         try {
             id = obj.getInt("id");
+            name = obj.getString("name");
+            isOnline = obj.getBoolean("online");
             JSONArray usersArray = obj.getJSONArray("listUser");
             for (int i = 0; i < usersArray.length(); i++) {
                 JSONObject userJson = usersArray.getJSONObject(i);
                 User user = new User(userJson);
                 listUser.add(user);
             }
-
-            JSONArray messagesArray = obj.getJSONArray("listMessage");
-            for (int i = 0; i < messagesArray.length(); i++) {
-                JSONObject messageJson = messagesArray.getJSONObject(i);
-                Send_Message message = new Send_Message(messageJson); 
-                listMessage.add(message);
-            }
         } catch (JSONException e) {
             System.err.println(e);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Group{" + "id=" + id + ", name=" + name + ", listUser=" + listUser.toString() + ", isOnline=" + isOnline + '}';
+    }
+    
+    public JSONObject toJSONObject() {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("id", id);
+            json.put("name", name);
+            json.put("isOnline", isOnline);
+
+            JSONArray jsonArray = new JSONArray();
+            for (User user : listUser) {
+                jsonArray.put(user.toJSONObject());
+            }
+            json.put("listUser", jsonArray);
+
+            return json;
+        } catch (JSONException e) {
+            return null;
         }
     }
 }

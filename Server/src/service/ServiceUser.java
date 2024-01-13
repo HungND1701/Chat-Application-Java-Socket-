@@ -10,10 +10,12 @@ import java.util.List;
 import model.Client;
 import model.Conversation;
 import model.Friend;
+import model.Group;
 import model.Login;
 import model.Message;
 import model.Register;
 import model.Send_Message;
+import model.Send_Message_Group;
 import model.User;
 
 public class ServiceUser {
@@ -107,12 +109,12 @@ public class ServiceUser {
     
     public List<User> getUser(int exitUser) throws SQLException {
         List<User> list = new ArrayList<>();
-        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE id <> ?");
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar , last_online FROM users WHERE id <> ?");
         p.setInt(1, exitUser);
         ResultSet rs = p.executeQuery();
         while(rs.next()){
             int id = rs.getInt(1);
-            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id)));
+            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id), timestampToString(rs.getTimestamp(5))));
         }
         rs.close();
         p.close();
@@ -120,26 +122,32 @@ public class ServiceUser {
     }
     public User getUserByID(int exitUser) throws SQLException {
         User user = new User();
-        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE id = ?");
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar, last_online FROM users WHERE id = ?");
         p.setInt(1, exitUser);
         ResultSet rs = p.executeQuery();
         if(rs.next()){
             int id = rs.getInt(1);
-            user = new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id));
+            user = new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id), timestampToString(rs.getTimestamp(5)));
         }
         rs.close();
         p.close();
         return user;
     }
+    public void updateLastOnline(int userID) throws SQLException{
+        PreparedStatement p = con.prepareStatement("UPDATE users SET last_online = ? WHERE id = ?");
+        p.setTimestamp(1, getTimestampNow());
+        p.setInt(2, userID);
+        p.executeUpdate();
+    }
     public List<User> getAllUserHaveConversation(int userID) throws SQLException{
         List<User> list = new ArrayList<>();
-        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE id IN (SELECT user_id FROM user_conversation WHERE user_id <> ? AND conversation_id IN(SELECT conversations.id FROM user_conversation JOIN conversations ON user_conversation.conversation_id = conversations.id WHERE is_group = 0 AND user_id = ?))");
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar, last_online FROM users WHERE id IN (SELECT user_id FROM user_conversation WHERE user_id <> ? AND conversation_id IN(SELECT conversations.id FROM user_conversation JOIN conversations ON user_conversation.conversation_id = conversations.id WHERE is_group = 0 AND user_id = ?))");
         p.setInt(1, userID);
         p.setInt(2, userID);
         ResultSet rs = p.executeQuery();
         while(rs.next()){
             int id = rs.getInt(1);
-            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id)));
+            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id), timestampToString(rs.getTimestamp(5))));
         }
         rs.close();
         p.close();
@@ -148,13 +156,13 @@ public class ServiceUser {
     
     public List<User> getFriendList(int exitUser) throws SQLException {
         List<User> list = new ArrayList<>();
-        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE id IN (SELECT IF(friend.user_id_1 = ?, friend.user_id_2, friend.user_id_1) AS id FROM friend WHERE ? IN (friend.user_id_1, friend.user_id_2)) ");
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar, last_online FROM users WHERE id IN (SELECT IF(friend.user_id_1 = ?, friend.user_id_2, friend.user_id_1) AS id FROM friend WHERE ? IN (friend.user_id_1, friend.user_id_2)) ");
         p.setInt(1, exitUser);
         p.setInt(2, exitUser);
         ResultSet rs = p.executeQuery();
         while(rs.next()){
             int id = rs.getInt(1);
-            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id)));
+            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id), timestampToString(rs.getTimestamp(5))));
         }
         rs.close();
         p.close();
@@ -162,17 +170,38 @@ public class ServiceUser {
     }
     public List<User> getOtherUser(int exitUser) throws SQLException {
         List<User> list = new ArrayList<>();
-        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar FROM users WHERE id <> ? AND id NOT IN (SELECT id FROM users WHERE id IN (SELECT IF(friend.user_id_1 = ?, friend.user_id_2, friend.user_id_1) AS id FROM friend WHERE ? IN (friend.user_id_1, friend.user_id_2))) ");
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar, last_online FROM users WHERE id <> ? AND id NOT IN (SELECT id FROM users WHERE id IN (SELECT IF(friend.user_id_1 = ?, friend.user_id_2, friend.user_id_1) AS id FROM friend WHERE ? IN (friend.user_id_1, friend.user_id_2))) ");
         p.setInt(1, exitUser);
         p.setInt(2, exitUser);
         p.setInt(3, exitUser);
         ResultSet rs = p.executeQuery();
         while(rs.next()){
             int id = rs.getInt(1);
-            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id)));
+            list.add(new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id), timestampToString(rs.getTimestamp(5))));
         }
         rs.close();
         p.close();
+        return list;
+    }
+    public List<Group> getGroupList(int userID) throws  SQLException {
+        List<Group> list = new ArrayList<>();
+        PreparedStatement p = con.prepareStatement("SELECT conversations.id, name FROM conversations join user_conversation ON conversations.id = user_conversation.conversation_id WHERE is_group = 1 AND user_id = ?;");
+        p.setInt(1, userID);
+        ResultSet rs = p.executeQuery();
+        while(rs.next()){
+            List<User> listUser = new ArrayList<>();
+            int conversation_id = rs.getInt(1);
+            String name = rs.getString(2);
+            p = con.prepareStatement("SELECT id, username, nickname, avatar, last_online FROM users WHERE id IN(SELECT user_id FROM user_conversation WHERE conversation_id = ?);");
+            p.setInt(1, conversation_id);
+            ResultSet rs_user = p.executeQuery();
+            while(rs_user.next()){
+                int id = rs_user.getInt(1);
+                listUser.add(new User(id ,rs_user.getString(2) ,rs_user.getString(3),rs_user.getString(4), checkUserStatus(id), timestampToString(rs_user.getTimestamp(5))));
+            }
+            rs_user.close();
+            list.add(new Group(conversation_id, name, listUser, true));
+        }
         return list;
     }
     
@@ -304,6 +333,45 @@ public class ServiceUser {
         }
         return false;
     }
+    public void addMessageToGroup(Send_Message_Group data) {
+        try {
+            int conversation_id = data.getConversation_id();
+            int fromUserID = data.getUserID();
+            List<Integer> toUserIDList = data.getUserIdList();
+            String text = data.getText();
+            int messageType = data.getMessageType();
+            String timeString = data.getTime();
+            //cover timeString to timestamp type
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime localDateTime = LocalDateTime.parse(timeString, formatter);
+            Timestamp timestamp = Timestamp.valueOf(localDateTime);
+            //check messages
+            con.setAutoCommit(false);
+            for(int toUserID : toUserIDList){
+                PreparedStatement p = con.prepareStatement("INSERT INTO messages(conversation_id, sender_id, receiver_id, content, send_time, type) VALUES(?,?,?,?,?,?)");
+                p.setInt(1, conversation_id);
+                p.setInt(2, fromUserID);
+                p.setInt(3, toUserID);
+                p.setString(4, text);
+                p.setTimestamp(5, timestamp);
+                p.setInt(6, messageType);
+                p.executeUpdate();
+                p.close();
+            }
+            con.commit();
+            con.setAutoCommit(true);
+        } catch (SQLException e) {
+            System.err.println(e);
+            try {
+                if(con.getAutoCommit()==false){
+                    con.rollback();
+                    con.setAutoCommit(true);
+                }
+            } catch (SQLException e1) {
+                
+            }
+        }
+    }
     
     public List<Send_Message> getMessagesConversation(Conversation data){
         List<Send_Message> listMessages = new ArrayList<>();
@@ -331,6 +399,31 @@ public class ServiceUser {
         } catch (SQLException e) {
             return new ArrayList<>();
         }
+    }
+    public List<Send_Message_Group> getMessagesConversationGroup(int conversation_id){
+        try {
+            List<Send_Message_Group> list = new ArrayList<>();
+            PreparedStatement p = con.prepareStatement("SELECT DISTINCT conversation_id, sender_id, content, send_time, type FROM messages WHERE conversation_id = ? ORDER BY send_time ASC;");
+            p.setInt(1, conversation_id);
+            ResultSet rs = p.executeQuery();
+            while(rs.next()){
+                list.add(new Send_Message_Group(rs.getInt(1),rs.getInt(2), new ArrayList<Integer>(), rs.getString(3), timestampToString(rs.getTimestamp(4)), rs.getInt(5)));
+            }
+            return list;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }   
+    }
+    private static String timestampToString(Timestamp timestamp){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedDateTime = timestamp.toLocalDateTime().format(formatter);
+        return formattedDateTime;
+    }
+    
+    private Timestamp getTimestampNow(){
+        LocalDateTime localDateTime = LocalDateTime.now();
+        Timestamp timestamp = Timestamp.valueOf(localDateTime);
+        return timestamp;
     }
     public User verifyUser(String userName, String password) {
         try {
