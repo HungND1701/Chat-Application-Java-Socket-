@@ -4,6 +4,7 @@
  */
 package form;
 
+import model.Group;
 import model.User;
 import net.miginfocom.swing.MigLayout;
 
@@ -32,6 +33,10 @@ public class Home extends javax.swing.JLayeredPane {
     
     public void setUserChat(User user){
         chat.setUserChat(user);
+        chat.setVisible(true);
+    }
+    public void setGroupChat(Group group){
+        chat.setGroupChat(group);
         chat.setVisible(true);
     }
     public void updateUserChat(User user){

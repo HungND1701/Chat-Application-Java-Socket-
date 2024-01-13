@@ -7,8 +7,17 @@ public class User {
     private String nickname;
     private String avatar;
     private boolean isOnline;
+    private String last_online;
 
     public User() {
+    }
+    public User(int ID, String username, String nickname, String avatar, boolean isOnline, String last_online) {
+        this.ID = ID;
+        this.username = username;
+        this.nickname = nickname;
+        this.avatar = avatar;
+        this.isOnline = isOnline;
+        this.last_online = last_online;
     }
 
     public User(int ID, String username, String nickname, String avatar, boolean isOnline) {
@@ -108,9 +117,17 @@ public class User {
         isOnline = online;
     }
 
+    public String getLast_online() {
+        return last_online;
+    }
+
+    public void setLast_online(String last_online) {
+        this.last_online = last_online;
+    }
+
     @Override
     public String toString() {
-        return "User{" + "ID=" + ID + ", username=" + username + ", password=" + password + ", nickname=" + nickname + ", avatar=" + avatar + ", isOnline=" + isOnline + '}';
-    }
+        return "User{" + "ID=" + ID + ", username=" + username + ", password=" + password + ", nickname=" + nickname + ", avatar=" + avatar + ", isOnline=" + isOnline + ", last_online=" + last_online + '}';
+    } 
     
 }

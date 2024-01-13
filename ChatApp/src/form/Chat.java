@@ -14,8 +14,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import model.Conversation;
+import model.Group;
 import model.Receive_Message;
 import model.Send_Message;
+import model.Send_Message_Group;
 import model.User;
 import net.miginfocom.swing.MigLayout;
 import service.Service;
@@ -74,6 +76,23 @@ public class Chat extends javax.swing.JPanel {
                     } 
                 }
             }
+            @Override
+            public void receiveMessageGroup(int conversation_id, Receive_Message data) {
+                if(chatTitle.getUser()== null && chatTitle.getGroup() !=null){
+                    if(chatTitle.getGroup().getId() == conversation_id){
+                        String time = data.getTime();
+                        int spaceIndex = time.indexOf(" ");
+                        String datePart = time.substring(0, spaceIndex);
+                        String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
+                        if(!datePart.equals(lastDate)){
+                            lastDate = datePart;
+                            chatBody.addDate("Today");
+                        }
+                        data.setTime(timePart);
+                        chatBody.addItemLeft(data, true);
+                    } 
+                }
+            }
 
             @Override
             public void initMessage(List<Send_Message> list) {
@@ -122,6 +141,68 @@ public class Chat extends javax.swing.JPanel {
                     lastDate = date;
                 } 
             }
+            
+            @Override
+            public void initMessageGroup(List<Send_Message_Group> list) {
+                if(!list.isEmpty()){
+                    String date = "";
+                    LocalDate currentDate = LocalDate.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYY-MM-dd");
+                    String today = currentDate.format(formatter);
+                    for(Send_Message_Group message: list){
+                        if(message.getUserID()==Service.getInstance().getUser().getID()){
+                            String time = message.getTime();
+                            int spaceIndex = time.indexOf(" ");
+                            String datePart = time.substring(0, spaceIndex);
+                            String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
+                            if(!date.equals(datePart)){
+                                date = datePart;
+                                if(date.equals(today)){
+                                    chatBody.addDate("Today");
+                                }else{
+                                    chatBody.addDate(date);
+                                }
+                                message.setTime(timePart);
+                            }else{
+                                message.setTime(timePart);
+                            }
+                            chatBody.addItemRight(new Send_Message(message.getUserID(),0 ,message.getText(), message.getTime(), message.getMessageType()));
+                        }else{
+                            String time = message.getTime();
+                            int spaceIndex = time.indexOf(" ");
+                            String datePart = time.substring(0, spaceIndex);
+                            String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
+                            if(!date.equals(datePart)){
+                                date = datePart;
+                                if(date.equals(today)){
+                                    chatBody.addDate("Today");
+                                }else{
+                                    chatBody.addDate(date);
+                                }
+                                message.setTime(timePart);
+                            }else{
+                                message.setTime(timePart);
+                            }
+                            chatBody.addItemLeft(new Receive_Message(message.getUserID(), message.getText(), message.getTime(), message.getMessageType()), true);
+                        }
+                    }
+                    lastDate = date;
+                } 
+            }
+
+            @Override
+            public void sendMessageGroup(Send_Message_Group data) {
+                String time = data.getTime();
+                int spaceIndex = time.indexOf(" ");
+                String datePart = time.substring(0, spaceIndex);
+                String timePart = time.substring(spaceIndex + 1, spaceIndex+6);
+                if(!datePart.equals(lastDate)){
+                    lastDate = datePart;
+                    chatBody.addDate("Today");
+                }
+                data.setTime(timePart);
+                chatBody.addItemRight(new Send_Message(data.getUserID(),0 ,data.getText(), data.getTime(), data.getMessageType()));
+            }
 
             
         });
@@ -133,6 +214,12 @@ public class Chat extends javax.swing.JPanel {
         chatTitle.setUserName(user);
         chatBody.setUser(user);
         chatBottom.setUser(user);
+        chatBody.clearChat();
+    }
+    public void setGroupChat(Group group){
+        chatTitle.setGroupName(group);
+        chatBody.setGroup(group);
+        chatBottom.setGroup(group);
         chatBody.clearChat();
     }
     public void updateUserChat(User user){

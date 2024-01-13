@@ -1,14 +1,25 @@
 package component;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.Timer;
+import model.Group;
 import model.User;
+import service.Service;
 
 public class Chat_Title extends javax.swing.JPanel {
 
     private User user;
+    private Timer timer;
+    private Group group;
 
     public User getUser() {
         return user;
+    }
+
+    public Group getGroup() {
+        return group;
     }
     
     public Chat_Title() {
@@ -16,23 +27,60 @@ public class Chat_Title extends javax.swing.JPanel {
     }
 
     public void setUserName(User user){
+        this.group = null;
         this.user = user;
         lbName.setText(user.getUsername());
+        if (timer!=null&&timer.isRunning()) {
+            timer.stop();
+        }
         if(user.isOnline()){
+            statusActive();
+        }else{
+            timer = new Timer(1000, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setStatusText("Online " + Service.getTimeOffline(user.getLast_online())+" ago");
+                }
+            });
+            timer.start();
+        }
+    }
+    public void setGroupName(Group gr){
+        this.user = null;
+        this.group = gr;
+        lbName.setText(group.getName());
+        if(group.isOnline()){
             statusActive();
         }else{
             setStatusText("Offline");
         }
     }
-    public void updateUser(User user){
-        if(this.user==user){ // neu title user la user thay doi trang thai thi cap nhat 
-            lbName.setText(user.getUsername());
-            if(user.isOnline()){
-                statusActive();
-            }else{
-                setStatusText("Offline");
+    
+    public void updateUser(User u1){
+        if(this.user!=null){
+            if(this.user.getID()==u1.getID()){ // neu title user la user thay doi trang thai thi cap nhat 
+                this.user = u1;
+                if (timer!=null&&timer.isRunning()) {
+                    timer.stop();
+                }
+                lbName.setText(user.getUsername());
+                if(user.isOnline()){
+                    if (timer!=null&&timer.isRunning()) {
+                        timer.stop();
+                    }
+                    statusActive();
+                }else{
+                    timer = new Timer(1000, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            setStatusText("Online " + Service.getTimeOffline(user.getLast_online())+" ago");
+                        }
+                    });
+                    timer.start();
+                }
             }
         }
+
     }
     private void statusActive(){
         lbStatus.setText("Active Now");

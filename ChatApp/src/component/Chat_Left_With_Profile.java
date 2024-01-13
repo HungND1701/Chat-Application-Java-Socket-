@@ -2,6 +2,7 @@ package component;
 
 import java.awt.Color;
 import javax.swing.Icon;
+import model.Receive_Message;
 
 public class Chat_Left_With_Profile extends javax.swing.JLayeredPane {
 
@@ -18,6 +19,7 @@ public class Chat_Left_With_Profile extends javax.swing.JLayeredPane {
     public void setImageProfile(Icon image){
         IaImage.setImage(image);
     }
+    
     public void setText(String text){
         if(text.equals("")){
             txt.hideText();
@@ -34,12 +36,16 @@ public class Chat_Left_With_Profile extends javax.swing.JLayeredPane {
         txt.setImage(false, image);
     }
     
-    public void setTime(){ // add time later
-        txt.setTime("10:30 PM");
+    public void setTime(String time){ // add time later
+        txt.setTime(time);
     }
     
     public void setFile(String fileName, String fileSize){
         txt.setFile(fileName, fileSize);
+    }
+    public void setEmoji(Icon icon){
+        txt.hideText();
+        txt.setEmoji(false, icon);
     }
 
     @SuppressWarnings("unchecked")

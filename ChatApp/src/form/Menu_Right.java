@@ -68,18 +68,23 @@ public class Menu_Right extends javax.swing.JPanel {
                 status.setText(user.isOnline()?"Is Active" : "Not Active");
                 status.setForeground(user.isOnline()? new Color(40, 147, 59): new Color(160, 160, 160));
                 changeButton(user);
-                for(User u : listMem){
-                    listUser.add(u);
-                    listMember.add(new Item_People(u), "wrap");
-                    refreshMemList();
+                listMember.removeAll();
+                if(listMem.size()>0){
+                    for(User u : listMem){
+                        listUser.add(u);
+                        listMember.add(new Item_People(u), "wrap");
+                        refreshMemList();
+                    }
+                    addOptionGroup();
                 }
                 repaint();
                 revalidate();
             }
 
             @Override
-            public void userConnect(int userID) {
-                if(userID == user.getID()){
+            public void userConnect(User u1) {
+                int userID = u1.getID();
+                if(user!= null && userID == user.getID()){
                     status.setText("Is Active");
                 }
                 for(User u : listUser){
@@ -91,14 +96,15 @@ public class Menu_Right extends javax.swing.JPanel {
                 for(Component com: listMember.getComponents()){
                     Item_People item = (Item_People)com;
                     if(item.getUser().getID()== userID){
-                        item.updateStatus();
+                        item.updateStatus(true);
                         break;
                     }
                 }
             }
 
             @Override
-            public void userDisconnect(int userID) {
+            public void userDisconnect(User u1) {
+                int userID = u1.getID();
                 if(userID == user.getID()){
                     status.setText("Not Active");
                 }
@@ -111,7 +117,7 @@ public class Menu_Right extends javax.swing.JPanel {
                 for(Component com: listMember.getComponents()){
                     Item_People item = (Item_People)com;
                     if(item.getUser().getID()== userID){
-                        item.updateStatus();
+                        item.updateStatus(false);
                         break;
                     }
                 }
@@ -163,6 +169,30 @@ public class Menu_Right extends javax.swing.JPanel {
                 addUnfriendButton();
             }
         }
+    }
+    private void addOptionGroup(){
+        setting.removeAll();
+        MenuButton btn = new MenuButton();
+        btn.setText("Leave the group");
+        btn.setIcon(new ImageIcon(getClass().getResource("/icon/leave.png")));
+        btn.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                Service.getInstance().getClient().emit("leave_group", );
+            }
+        });
+        setting.add(btn);
+        MenuButton btn2 = new MenuButton();
+        btn2.setText("Add user");
+        btn2.setIcon(new ImageIcon(getClass().getResource("/icon/add_friend.png")));
+        btn2.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                Service.getInstance().getClient().emit("add_user_group", );
+            }
+        });
+        setting.add(btn2);
+        refreshSetting();
     }
     
     private void addUnfriendButton(){
@@ -326,11 +356,13 @@ public class Menu_Right extends javax.swing.JPanel {
                 .addContainerGap(14, Short.MAX_VALUE)
                 .addComponent(jLabel3)
                 .addGap(136, 136, 136))
-            .addComponent(spMember, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGap(14, 14, 14)
                 .addComponent(jLabel4)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(spMember, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -343,8 +375,8 @@ public class Menu_Right extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel4)
                 .addGap(4, 4, 4)
-                .addComponent(spMember, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
+                .addComponent(spMember, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 

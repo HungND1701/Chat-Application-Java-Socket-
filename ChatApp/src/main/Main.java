@@ -12,6 +12,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import model.Conversation;
+import model.Group;
 import model.User;
 import service.Service;
 import swing.ComponentResizer;
@@ -56,6 +57,7 @@ public class Main extends javax.swing.JFrame {
                 Service.getInstance().getClient().emit("list_user", Service.getInstance().getUser().getID());
                 Service.getInstance().getClient().emit("list_friend", Service.getInstance().getUser().getID());
                 Service.getInstance().getClient().emit("other_user", Service.getInstance().getUser().getID());
+                Service.getInstance().getClient().emit("list_group", Service.getInstance().getUser().getID());
             }
 
             @Override
@@ -69,6 +71,13 @@ public class Main extends javax.swing.JFrame {
             @Override
             public void updateUserChat(User user) {
                 home.updateUserChat(user);
+            }
+
+            @Override
+            public void selectGroupChat(Group group) {
+                home.setGroupChat(group);
+                PublicEvent.getInstance().getEventMenuRight().newUser(new User(0,group.getName(),"","","group",group.isOnline()), group.getListUser());
+                Service.getInstance().getClient().emit("list_group_message", group.toJSONObject());
             }
         });
         
