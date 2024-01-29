@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th1 29, 2024 lúc 12:11 PM
+-- Thời gian đã tạo: Th1 29, 2024 lúc 12:49 PM
 -- Phiên bản máy phục vụ: 10.4.27-MariaDB
 -- Phiên bản PHP: 7.4.33
 
@@ -314,7 +314,11 @@ INSERT INTO `messages` (`id`, `conversation_id`, `sender_id`, `receiver_id`, `co
 (257, 4, 29, 28, 'oke', '2024-01-28 17:35:33', 0, NULL, 1),
 (258, 4, 29, 29, 'oke', '2024-01-28 17:35:33', 0, NULL, 1),
 (259, 4, 29, 30, 'oke', '2024-01-28 17:35:33', 0, NULL, 1),
-(260, 4, 29, 31, 'oke', '2024-01-28 17:35:33', 0, NULL, 1);
+(260, 4, 29, 31, 'oke', '2024-01-28 17:35:33', 0, NULL, 1),
+(261, 2, 24, 25, 'daubuoi', '2024-01-29 11:38:16', 0, NULL, 1),
+(262, 2, 24, 25, 'daubuoi', '2024-01-29 11:42:14', 0, NULL, 1),
+(263, 2, 25, 24, 'buoi', '2024-01-29 11:48:55', 0, NULL, 1),
+(264, 2, 25, 24, 'đi ăn daubuoi không', '2024-01-29 11:49:13', 0, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -355,8 +359,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `nickname`, `avatar`, `isOnline`, `last_online`) VALUES
-(24, 'hung', '111', '111', '10', 1, '2024-01-29 11:08:31'),
-(25, 'bach', '111', 'bach', '11', 1, '2024-01-29 11:08:31'),
+(24, 'hung', '111', '111', '10', 1, '2024-01-29 11:49:22'),
+(25, 'bach', '111', 'bach', '11', 1, '2024-01-29 11:49:24'),
 (26, 'aaaa', '111', '111', '12', 1, '2024-01-28 18:13:44'),
 (27, 'khanh', '111', '111', '13', 1, '2024-01-28 17:27:29'),
 (28, 'Ngoc', '111', '111', '14', 1, '2024-01-28 18:13:30'),
@@ -467,7 +471,7 @@ ALTER TABLE `friend`
 -- AUTO_INCREMENT cho bảng `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=261;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=265;
 
 --
 -- AUTO_INCREMENT cho bảng `role_conversation`
