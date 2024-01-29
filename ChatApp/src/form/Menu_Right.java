@@ -9,17 +9,23 @@ import component.Item_People;
 import component.MenuButton;
 import event.EventMenuRight;
 import event.PublicEvent;
+import io.socket.client.Ack;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
 import model.Friend;
+import model.Group;
 import model.Send_Message;
 import model.User;
+import model.User_Group;
 import net.miginfocom.swing.MigLayout;
 import service.Service;
 import swing.ScrollBar;
@@ -31,6 +37,7 @@ import swing.ScrollBar;
 public class Menu_Right extends javax.swing.JPanel {
 
     private User user;
+    private Group group;
     private List<User> listUser;
     private List<User> otherUsers;
     public User getUser() {
@@ -39,6 +46,14 @@ public class Menu_Right extends javax.swing.JPanel {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
     }
     
     
@@ -51,17 +66,12 @@ public class Menu_Right extends javax.swing.JPanel {
         spSetting.setVerticalScrollBar(new ScrollBar());
         spMember.setVerticalScrollBar(new ScrollBar());
         listMember.setLayout(new MigLayout("fillx","0[fill]0","0[]1" ));
-        listUser = new ArrayList<>();
         otherUsers = new ArrayList<>();
         
-        for(User u : listUser){
-            listUser.add(u);
-            listMember.add(new Item_People(u), "wrap");
-            refreshMemList();
-        }
         PublicEvent.getInstance().addEventMenuRight(new EventMenuRight(){
             @Override
             public void newUser(User user, List<User> listMem) {
+                setGroup(null);
                 setUser(user);
                 imageAvatar.setImage(new ImageIcon(getClass().getResource("/avatar/"+user.getAvatar()+".png")));
                 name.setText(user.getUsername());
@@ -69,14 +79,25 @@ public class Menu_Right extends javax.swing.JPanel {
                 status.setForeground(user.isOnline()? new Color(40, 147, 59): new Color(160, 160, 160));
                 changeButton(user);
                 listMember.removeAll();
-                if(listMem.size()>0){
-                    for(User u : listMem){
-                        listUser.add(u);
-                        listMember.add(new Item_People(u), "wrap");
-                        refreshMemList();
-                    }
-                    addOptionGroup();
+                repaint();
+                revalidate();
+            }
+            @Override
+            public void newGroup(Group gr) {
+                setUser(null);
+                setGroup(gr);
+                imageAvatar.setImage(new ImageIcon(getClass().getResource("/avatar/group.png")));
+                name.setText(group.getName());
+                status.setText("Is Active");
+                status.setForeground(new Color(40, 147, 59));
+                listUser = new ArrayList<>();
+                listMember.removeAll();
+                for(User u : group.getListUser()){
+                    listUser.add(u);
+                    listMember.add(new Item_People(u), "wrap");
+                    refreshMemList();
                 }
+                addOptionGroup();
                 repaint();
                 revalidate();
             }
@@ -87,10 +108,12 @@ public class Menu_Right extends javax.swing.JPanel {
                 if(user!= null && userID == user.getID()){
                     status.setText("Is Active");
                 }
-                for(User u : listUser){
-                    if(u.getID()==userID){
-                        u.setOnline(true);
-                        break;
+                if(listUser!=null){
+                    for(User u : listUser){
+                        if(u.getID()==userID){
+                            u.setOnline(true);
+                            break;
+                        }
                     }
                 }
                 for(Component com: listMember.getComponents()){
@@ -108,10 +131,12 @@ public class Menu_Right extends javax.swing.JPanel {
                 if(userID == user.getID()){
                     status.setText("Not Active");
                 }
-                for(User u : listUser){
-                    if(u.getID()==userID){
-                        u.setOnline(false);
-                        break;
+                if(listUser!=null){
+                    for(User u : listUser){
+                        if(u.getID()==userID){
+                            u.setOnline(false);
+                            break;
+                        }
                     }
                 }
                 for(Component com: listMember.getComponents()){
@@ -149,6 +174,31 @@ public class Menu_Right extends javax.swing.JPanel {
                 otherUsers.add(user1);
                 changeButton(user);          
             }
+
+            @Override
+            public void removeUserGroup(int userID, int groupID) {
+                if(group != null && group.getId()==groupID){
+                    listMember.removeAll();
+                    for(User u : group.getListUser()){
+                        if(u.getID()== userID){
+                            listUser.remove(u);
+                        }else{
+                            listMember.add(new Item_People(u), "wrap");
+                        }
+                    }
+                    refreshMemList();
+                }
+            }
+
+            @Override
+            public void addUserGroup(User user, int groupID) {
+                if(group != null && group.getId()==groupID){
+                    listUser.add(user);
+                    group.setListUser(listUser);
+                    listMember.add(new Item_People(user), "wrap");
+                    refreshMemList();
+                }
+            }
             
         });
                 
@@ -178,20 +228,74 @@ public class Menu_Right extends javax.swing.JPanel {
         btn.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-//                Service.getInstance().getClient().emit("leave_group", );
+                Service.getInstance().getClient().emit("leave_group", new User_Group(Service.getInstance().getUser().getID(), group.getId()).toJSONObject(), new Ack(){
+                    @Override
+                    public void call(Object... os) {
+                        boolean bl = (boolean) os[0];
+                        if(bl){
+                            setting.removeAll();
+                            listMember.removeAll();
+                            JLabel statusLeave = new JLabel("Successfully left the group");
+                            statusLeave.setForeground(new java.awt.Color(51, 204, 51));
+                            setting.add(statusLeave);
+                            refreshSetting();
+                            refreshMemList();
+                        }else{
+                            JLabel statusLeave = new JLabel("Failed to leave the group");
+                            statusLeave.setForeground(new java.awt.Color(255, 51, 0));
+                            setting.add(statusLeave);
+                            refreshSetting();
+                        }
+                    }
+                    
+                });
             }
         });
-        setting.add(btn);
+        JTextField jTF = new JTextField();
+        jTF.setMinimumSize(new Dimension(0,25));
         MenuButton btn2 = new MenuButton();
         btn2.setText("Add user");
         btn2.setIcon(new ImageIcon(getClass().getResource("/icon/add_friend.png")));
         btn2.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-//                Service.getInstance().getClient().emit("add_user_group", );
+                String usernameInsert = jTF.getText();
+                JLabel status1 = new JLabel("Enter username user");
+                status1.setForeground(new java.awt.Color(255, 51, 0));
+                status1.setVisible(false);
+                setting.add(status1);
+                refreshSetting();
+                if(usernameInsert.equals("") || usernameInsert == null){
+                    status1.setVisible(true);
+                    refreshSetting();
+                }else{
+                    status1.setVisible(false);
+                    refreshSetting();
+                    Service.getInstance().getClient().emit("add_user_group", new User_Group(usernameInsert, group.getId()).toJSONObject(), new Ack(){
+                        @Override
+                        public void call(Object... os) {
+                            boolean bl = (boolean) os[0];
+                            if(bl){
+                                status1.setText("Successfully add "+ usernameInsert+" the group");
+                                status1.setForeground(new java.awt.Color(51, 204, 51));
+                                status1.setVisible(true);
+                                refreshSetting();
+                            }else{
+                                status1.setText("Failed to add "+ usernameInsert+" into group");
+                                status1.setForeground(new java.awt.Color(51, 204, 51));
+                                status1.setVisible(true);
+                                refreshSetting();
+                            }
+                        }
+
+                    });
+                }
+  
             }
         });
+        setting.add(btn);
         setting.add(btn2);
+        setting.add(jTF);
         refreshSetting();
     }
     

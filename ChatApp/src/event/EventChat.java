@@ -13,4 +13,6 @@ public interface EventChat {
     public void receiveMessageGroup(int conversation_id, Receive_Message message);
     public void initMessage(List<Send_Message> list);
     public void initMessageGroup(List<Send_Message_Group> list);
+    public void sendMemberLeftMessage(int groupID, String userName);
+    public void sendAddMemberMessage(int groupID, String userName);
 }

@@ -204,6 +204,16 @@ public class Chat extends javax.swing.JPanel {
                 chatBody.addItemRight(new Send_Message(data.getUserID(),0 ,data.getText(), data.getTime(), data.getMessageType()));
             }
 
+            @Override
+            public void sendMemberLeftMessage(int groupID, String userName) {
+                chatBody.addMemberLeftMessage(groupID, userName);
+            }
+
+            @Override
+            public void sendAddMemberMessage(int groupID, String userName) {
+                chatBody.addNewMemberMessage(groupID, userName);
+            }
+
             
         });
         add(chatTitle, "wrap");

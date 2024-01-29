@@ -202,6 +202,25 @@ public class Service {
                     PublicEvent.getInstance().getEventMenuRight().addOtherUserList(u);
                 }
             });
+            client.on("user_leave_group", new Emitter.Listener() {
+                @Override
+                public void call(Object... os) {
+                    int userID = (Integer) os[0];
+                    int groupID = (Integer) os[1];
+                    String userName = (String) os[2];
+                    PublicEvent.getInstance().getEventMenuRight().removeUserGroup(userID, groupID);
+                    PublicEvent.getInstance().getEventChat().sendMemberLeftMessage(groupID, userName);
+                }
+            });
+            client.on("new_user_group", new Emitter.Listener() {
+                @Override
+                public void call(Object... os) {
+                    User u = new User(os[0]);
+                    int groupID = (Integer) os[1];
+                    PublicEvent.getInstance().getEventMenuRight().addUserGroup(u, groupID);
+                    PublicEvent.getInstance().getEventChat().sendAddMemberMessage(groupID, u.getUsername());
+                }
+            });
             client.open();
         } catch (URISyntaxException ex) {
             error(ex);

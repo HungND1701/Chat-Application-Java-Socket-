@@ -100,34 +100,46 @@ public class Chat_Body extends javax.swing.JPanel {
     public void addItemLeft(Receive_Message data, Boolean isGroup){
         if(isGroup){
             User u= new User();
+            boolean inListUser = false;
             for(User u1 : group.getListUser()){
                 if(u1.getID()==data.getFromUserID()){
                     u= u1;
+                    inListUser = true;
                     break;
                 }
             }
-            if(data.getMessageType()== MessageType.TEXT){
-                Chat_Left_With_Profile item = new Chat_Left_With_Profile();
-                item.setUserProfile(u.getUsername());
-                item.setImageProfile(new ImageIcon(getClass().getResource("/avatar/"+u.getAvatar()+".png")));
-                item.setText(data.getText());
-                item.setTime(data.getTime());
-                body.add(item, "wrap, w 100::80%");
-            }else if(data.getMessageType()== MessageType.EMOJI){
-                Chat_Left_With_Profile item = new Chat_Left_With_Profile();
-                item.setUserProfile(u.getUsername());
-                item.setImageProfile(new ImageIcon(getClass().getResource("/avatar/"+u.getAvatar()+".png")));
-                item.setEmoji(Emoji.getInstance().getEmoji(Integer.valueOf(data.getText())).getIcon());
-                item.setTime(data.getTime());
-                body.add(item, "wrap, w 100::80%");
-            }else{
-                //send file
+            if(!inListUser){
+                for(User u1 : group.getListUserLeft()){
+                    if(u1.getID()==data.getFromUserID()){
+                        u= u1;
+                        break;
+                    }
+                }
             }
-            repaint();
-            revalidate();
-            scrollToBottom();
+            if(u.getID()!=0){
+                if(data.getMessageType()== MessageType.TEXT){
+                    Chat_Left_With_Profile item = new Chat_Left_With_Profile();
+                    item.setUserProfile(u.getUsername());
+                    item.setImageProfile(new ImageIcon(getClass().getResource("/avatar/"+u.getAvatar()+".png")));
+                    item.setText(data.getText());
+                    item.setTime(data.getTime());
+                    body.add(item, "wrap, w 100::80%");
+                }else if(data.getMessageType()== MessageType.EMOJI){
+                    Chat_Left_With_Profile item = new Chat_Left_With_Profile();
+                    item.setUserProfile(u.getUsername());
+                    item.setImageProfile(new ImageIcon(getClass().getResource("/avatar/"+u.getAvatar()+".png")));
+                    item.setEmoji(Emoji.getInstance().getEmoji(Integer.valueOf(data.getText())).getIcon());
+                    item.setTime(data.getTime());
+                    body.add(item, "wrap, w 100::80%");
+                }else{
+                    //send file
+                }
+                repaint();
+                revalidate();
+                scrollToBottom();
+            }           
         }
-    }  
+    }
     
     public void addItemRight(String text, String[] image){
         Chat_Right item = new Chat_Right();
@@ -169,6 +181,17 @@ public class Chat_Body extends javax.swing.JPanel {
         body.repaint();
         body.revalidate();
     }
+    public void addMemberLeftMessage(int groupID, String userName){
+        if(group.getId()== groupID){
+            addDate(userName + " left the group.");
+        }
+    }
+    public void addNewMemberMessage(int groupID, String userName){
+        if(group.getId()== groupID){
+            addDate(userName + " join the group.");
+        }
+    }
+    
     public void clearChat(){
         body.removeAll();
         repaint();

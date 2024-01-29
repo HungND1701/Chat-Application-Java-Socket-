@@ -133,6 +133,19 @@ public class ServiceUser {
         p.close();
         return user;
     }
+    public User getUserByUsername(String username) throws SQLException {
+        User user = new User();
+        PreparedStatement p = con.prepareStatement("SELECT id, username, nickname, avatar, last_online FROM users WHERE username = ?");
+        p.setString(1, username);
+        ResultSet rs = p.executeQuery();
+        if(rs.next()){
+            int id = rs.getInt(1);
+            user = new User(id ,rs.getString(2) ,rs.getString(3),rs.getString(4), checkUserStatus(id), timestampToString(rs.getTimestamp(5)));
+        }
+        rs.close();
+        p.close();
+        return user;
+    }
     public void updateLastOnline(int userID) throws SQLException{
         PreparedStatement p = con.prepareStatement("UPDATE users SET last_online = ? WHERE id = ?");
         p.setTimestamp(1, getTimestampNow());
@@ -189,6 +202,7 @@ public class ServiceUser {
         p.setInt(1, userID);
         ResultSet rs = p.executeQuery();
         while(rs.next()){
+            List<User> listUserLeft = new ArrayList<>();
             List<User> listUser = new ArrayList<>();
             int conversation_id = rs.getInt(1);
             String name = rs.getString(2);
@@ -199,10 +213,34 @@ public class ServiceUser {
                 int id = rs_user.getInt(1);
                 listUser.add(new User(id ,rs_user.getString(2) ,rs_user.getString(3),rs_user.getString(4), checkUserStatus(id), timestampToString(rs_user.getTimestamp(5))));
             }
-            rs_user.close();
-            list.add(new Group(conversation_id, name, listUser, true));
+            rs_user.close();            
+            
+            p = con.prepareStatement("SELECT id, username, nickname, avatar, last_online FROM users WHERE id IN(SELECT DISTINCT sender_id FROM messages WHERE conversation_id = ? AND sender_id NOT IN (SELECT user_id FROM user_conversation WHERE conversation_id = ?));");
+            p.setInt(1, conversation_id);
+            p.setInt(2, conversation_id);
+            ResultSet rs_user_left = p.executeQuery();
+            while(rs_user_left.next()){
+                int id = rs_user_left.getInt(1);
+                listUserLeft.add(new User(id ,rs_user_left.getString(2) ,rs_user_left.getString(3),rs_user_left.getString(4), checkUserStatus(id), timestampToString(rs_user_left.getTimestamp(5))));
+            }
+            rs_user_left.close(); 
+            
+            list.add(new Group(conversation_id, name, listUser, listUserLeft, true));
         }
         return list;
+    }
+    public List<Integer> getListUserIDGroup(int conversation_id) throws SQLException {
+        List<Integer> listUserID = new ArrayList<>();
+        PreparedStatement p = con.prepareStatement("SELECT id FROM users WHERE id IN(SELECT user_id FROM user_conversation WHERE conversation_id = ?);");
+        p.setInt(1, conversation_id);
+        ResultSet rs_user = p.executeQuery();
+        while(rs_user.next()){
+            int id = rs_user.getInt(1);
+            listUserID.add(id);
+        }
+        rs_user.close();
+        p.close();
+        return listUserID;
     }
     
     public boolean checkUserStatus(int id){
@@ -425,206 +463,8 @@ public class ServiceUser {
         Timestamp timestamp = Timestamp.valueOf(localDateTime);
         return timestamp;
     }
-    public User verifyUser(String userName, String password) {
-        try {
-            PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM users WHERE username = ? AND password = ?");
-            preparedStatement.setString(1, userName);
-            preparedStatement.setString(2, password);
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-                return new User(rs.getInt(1),
-                        rs.getString(2),
-                        rs.getString(3),
-                        rs.getString(4),
-                        rs.getString(5),
-                        (rs.getInt(6) != 0));
-            }else return null;
-            
-        } catch (SQLException e) {
-        }
-        return null;
-    }
-    
-    public User checkUser(String userName) {
-        try {
-            PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM users WHERE username = ?");
-            preparedStatement.setString(1, userName);
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-                return new User(rs.getInt(1),
-                        rs.getString(2),
-                        rs.getString(3),
-                        rs.getString(4),
-                        rs.getString(5),
-                        (rs.getInt(6) != 0));
-            }else return null;
-            
-        } catch (SQLException e) {
-        }
-        return null;
-    }
-    
-    public void addUser(User user) {
-        try {
-            PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO users(username, password, nickname, avatar)\n"
-                    + "VALUES(?,?,?,?)");
-            preparedStatement.setString(1, user.getUsername());
-            preparedStatement.setString(2, user.getPassword());
-            preparedStatement.setString(3, user.getNickname());
-            preparedStatement.setString(4, user.getAvatar());
-            System.out.println(preparedStatement);
-            preparedStatement.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
 
-    public void addUserWithUsernamePasswordNickname(User user) throws SQLException {
-        PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO users(username, password, nickname)\n"
-                + "VALUES(?,?,?)");
-        preparedStatement.setString(1, user.getUsername());
-        preparedStatement.setString(2, user.getPassword());
-        preparedStatement.setString(3, user.getNickname());
-        System.out.println(preparedStatement);
-        preparedStatement.executeUpdate();
-    }
-
-    public boolean checkDuplicated(String username) {
-        try {
-            PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM users WHERE username = ?");
-            preparedStatement.setString(1, username);
-            System.out.println(preparedStatement);
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-                return true;
-            }
-
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public void updateToOnline(int ID) {
-        try {
-            PreparedStatement preparedStatement = con.prepareStatement("UPDATE users\n"
-                    + "SET isOnline = 1\n"
-                    + "WHERE id = ?");
-            preparedStatement.setInt(1, ID);
-            System.out.println(preparedStatement);
-            preparedStatement.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void updateToOffline(int ID) {
-        try {
-            PreparedStatement preparedStatement = con.prepareStatement("UPDATE users\n"
-                    + "SET isOnline = 0\n"
-                    + "WHERE id = ?");
-            preparedStatement.setInt(1, ID);
-            System.out.println(preparedStatement);
-            preparedStatement.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public List<User> getListFriend(int ID) {
-        List<User> ListFriend = new ArrayList<>();
-        try {
-            PreparedStatement preparedStatement = con.prepareStatement("SELECT id, nickname, isOnline\n"
-                    + "FROM users\n"
-                    + "WHERE id IN (\n"
-                    + "	SELECT user_id_2\n"
-                    + "    FROM friend\n"
-                    + "    WHERE user_id_2 = ?\n"
-                    + ")\n"
-                    + "OR id IN(\n"
-                    + "	SELECT user_id_2\n"
-                    + "    FROM friend\n"
-                    + "    WHERE user_id_1 = ?\n"
-                    + ")");
-            preparedStatement.setInt(1, ID);
-            preparedStatement.setInt(2, ID);
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                ListFriend.add(new User(rs.getInt(1),  // ID
-                        rs.getString(2),
-                        (rs.getInt(3) == 1)));
-            }
-            ListFriend.sort(new Comparator<User>() {
-                @Override
-                public int compare(User o1, User o2) {
-                    if (o1.isOnline() && !o2.isOnline())
-                        return -1;
-                    if (o1.isOnline() && !o2.isOnline())
-                        return -1;
-                    return 0;
-                }
-
-            });
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return ListFriend;
-    }
-
-    public boolean checkIsFriend(int ID1, int ID2) {
-        try {
-            PreparedStatement preparedStatement = con.prepareStatement("SELECT *\n"
-                    + "FROM friend\n"
-                    + "WHERE (user_id_1 = ? AND user_id_2 = ?)\n"
-                    + "OR (user_id_1 = ? AND user_id_2 = ?)");
-            preparedStatement.setInt(1, ID1);
-            preparedStatement.setInt(2, ID2);
-            preparedStatement.setInt(3, ID2);
-            preparedStatement.setInt(4, ID1);
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-                return true;
-            }
-
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public void addFriendShip(int ID1, int ID2) {
-        try {
-            PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO friend(user_id_1, user_id_2)\n" +
-                    "VALUES (?,?)");
-            preparedStatement.setInt(1, ID1);
-            preparedStatement.setInt(2, ID2);
-            System.out.println(preparedStatement);
-            preparedStatement.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void removeFriendship(int ID1, int ID2) {
-        try {
-            PreparedStatement preparedStatement = con.prepareStatement("DELETE FROM friend\n" +
-                    "WHERE (user_id_1 = ? AND user_id_2 = ?)\n" +
-                    "OR(user_id_1 = ? AND user_id_2 = ?)");
-            preparedStatement.setInt(1, ID1);
-            preparedStatement.setInt(2, ID2);
-            preparedStatement.setInt(3, ID2);
-            preparedStatement.setInt(4, ID1);
-            System.out.println(preparedStatement);
-            preparedStatement.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void leaveConversation(int ConID, int UserID) {
+    public boolean leaveConversation(int ConID, int UserID) {
         try {
             PreparedStatement preparedStatement = con.prepareStatement("DELETE FROM user_conversation\n" +
                     "WHERE (user_id = ? AND conversation_id = ?)\n");
@@ -632,10 +472,25 @@ public class ServiceUser {
             preparedStatement.setInt(2, ConID);
             System.out.println(preparedStatement);
             preparedStatement.executeUpdate();
+            return true;
         } catch (SQLException ex) {
             ex.printStackTrace();
+            return false;
         }
     }
-    
+    public boolean addUserToConversation(int ConID, int UserID) {
+        try {
+            PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO user_conversation (user_id, conversation_id, role_id) VALUES\n" +
+                    "(?, ?, 1)");
+            preparedStatement.setInt(1, UserID);
+            preparedStatement.setInt(2, ConID);
+            System.out.println(preparedStatement);
+            preparedStatement.executeUpdate();
+            return true;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
     
 }

@@ -76,7 +76,7 @@ public class Main extends javax.swing.JFrame {
             @Override
             public void selectGroupChat(Group group) {
                 home.setGroupChat(group);
-                PublicEvent.getInstance().getEventMenuRight().newUser(new User(0,group.getName(),"","","group",group.isOnline()), group.getListUser());
+                PublicEvent.getInstance().getEventMenuRight().newGroup(group);
                 Service.getInstance().getClient().emit("list_group_message", group.toJSONObject());
             }
         });
