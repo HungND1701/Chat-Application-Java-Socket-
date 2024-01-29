@@ -25,6 +25,7 @@ import model.Register;
 import model.Send_Message;
 import model.Send_Message_Group;
 import model.User;
+import model.User_Group;
 
 public class Service {
     private static Service instance;
@@ -82,7 +83,6 @@ public class Service {
                 }
             }
         });
-        
         server.addEventListener("list_user", Integer.class, new DataListener<Integer>() {
             @Override
             public void onData(SocketIOClient sioc, Integer t, AckRequest ar) throws Exception {
@@ -241,6 +241,38 @@ public class Service {
             }
             
         });
+        server.addEventListener("leave_group", User_Group.class, new DataListener<User_Group>() {
+            @Override
+            public void onData(SocketIOClient sioc, User_Group t, AckRequest ar) throws Exception { 
+                System.out.println(t.toString());
+                int userId = t.getUserId();
+                int groupId = t.getGroupId();
+                boolean bl = serviceUser.leaveConversation(groupId, userId);
+                if(bl){
+                    sendToGroupLeaveMessage(groupId, userId);
+                    ar.sendAckData(true);
+                }else{
+                    ar.sendAckData(false);
+                }
+                
+            }
+        });
+        server.addEventListener("add_user_group", User_Group.class, new DataListener<User_Group>() {
+            @Override
+            public void onData(SocketIOClient sioc, User_Group t, AckRequest ar) throws Exception {
+                System.out.println(t.toString());
+                int groupId = t.getGroupId();
+                String userName = t.getUsername();
+                User u = serviceUser.getUserByUsername(userName);
+                boolean bl = serviceUser.addUserToConversation(groupId, u.getID());
+                if(bl){
+                    sendToGroupNewMemberMessage(groupId, u);
+                    ar.sendAckData(true);
+                }else{
+                    ar.sendAckData(false);
+                }
+            }
+        });
         server.start();
         textArea.append("\nServer has Start on port : " + PORT_NUMBER + "\n");
     }
@@ -274,6 +306,28 @@ public class Service {
             }
         }
     }
+    private void sendToGroupLeaveMessage(int groupId,int userID) throws SQLException{
+        List<Integer> listUserID = serviceUser.getListUserIDGroup(groupId);
+        User u = serviceUser.getUserByID(userID);
+        for(Client c: listClient){
+            for(int userId : listUserID){
+                if(userId!= userID && c.getUser().getID() == userId){
+                    c.getClient().sendEvent("user_leave_group", userID, groupId, u.getUsername());
+                }
+            }
+        }
+    };
+    private void sendToGroupNewMemberMessage(int groupId, User u) throws SQLException{
+        List<Integer> listUserID = serviceUser.getListUserIDGroup(groupId);
+        int userID = u.getID();
+        for(Client c: listClient){
+            for(int userId : listUserID){
+                if(userId!= userID && c.getUser().getID() == userId){
+                    c.getClient().sendEvent("new_user_group", u, groupId);
+                }
+            }
+        }
+    };
     private void sendToClientFlagNewConversation(Send_Message data) throws SQLException{
         for(Client c: listClient){
             if(c.getUser().getID() == data.getToUserID()){
